@@ -1,0 +1,42 @@
+FROM ubuntu:18.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+#RUN apt-get update -y && apt-get install -y --no-install-recommends build-essential \
+#	libxml2-dev \
+#	libldap2-dev \
+#	libxmlsec1-dev \
+#        libsasl2-dev \
+#        libffi-dev \
+#        texlive-latex-recommended \
+#        texlive-fonts-recommended \
+#	texlive-xetex \
+#	fonts-wqy-zenhei \
+#	fonts-roboto
+#
+#RUN apt-get install -y --no-install-recommends \
+#        python-dev \
+#        python-pip \
+#        python-setuptools \
+#        libpq-dev \
+#        xorg \
+#        wget \
+#	python-lxml
+
+RUN apt-get update -y && apt-get install -y --no-install-recommends build-essential
+
+RUN apt-get install -y --no-install-recommends \
+        python-dev \
+        python-pip \
+        python-setuptools \
+        libpq-dev
+
+RUN apt-get install -y --no-install-recommends postgresql postgresql-contrib
+
+WORKDIR /rest/Ippa_v1
+
+COPY requirements.txt ./
+RUN pip install wheel setuptools && \
+    pip install -r requirements.txt
+
+COPY Ippa_v1 /rest/Ippa_v1
