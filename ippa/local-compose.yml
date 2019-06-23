@@ -1,0 +1,14 @@
+version: '3.2'
+
+services:
+  wsgi:
+    build:
+      context: .
+      dockerfile: ./docker-build/Dockerfile.v1
+    image: ippa-api:latest
+    hostname: ippa-api
+    restart: always
+    volumes:
+      - ${PWD}/Ippa_v1:/rest/Ippa_v1
+    ports:
+      - 8082:8082

@@ -1,0 +1,13 @@
+#setup redis and store token in that.
+#write decorator to validate token
+#write logger file to log errors.
+#Trigger mail to admin when user sign up so that admin can verify.
+
+Steps for deployment:
+
+Connect to git first
+Write docker file and install postgres
+create database instance and make migrations
+deploy on aws.
+create muliple environment and database instance.
+create different git branch.
