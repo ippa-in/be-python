@@ -86,7 +86,6 @@ class LogIn(View):
 
 	def post(self, request, *args, **kwargs):
 
-		import pdb;pdb.set_trace()
 		params = request.POST
 		email_id = params.get("email_id")
 		password = params.get("password")
