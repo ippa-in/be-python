@@ -5,9 +5,8 @@
 
 Steps for deployment:
 
-Connect to git first
-Write docker file and install postgres
-create database instance and make migrations
 deploy on aws.
 create muliple environment and database instance.
 create different git branch.
+configure domain name using root53 service.
+change python version.

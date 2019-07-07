@@ -2,3 +2,4 @@
 *.env
 *.pyc
 Ippa_v1/Ippa_v1/db.sqlite3
+Ippa_v1/Ippa_v1/todo.txt

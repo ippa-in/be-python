@@ -4,7 +4,6 @@ from django.db import models, transaction
 from django.db.models import Q
 
 from AccessControl.constants import *
-from AccessControl.utils import get_user_data_dict
 from Ippa_v1.constants import *
 
 # Create your models here.
@@ -24,7 +23,6 @@ class IppaUserManager(models.Manager):
 		self.email_id = params.get("email_id")
 		self.password = params.get("password")
 		self.referral_code = params.get("referral_code")
-		self.user_name = params.get("user_name")
 
 	def _validate_user_data(self):
 
@@ -34,15 +32,26 @@ class IppaUserManager(models.Manager):
 		if not valid_email_id(self.email_id):
 			raise Exception("{0} is not valid".format(self.email_id))
 
+	def _get_user_data_dict(self, params):
+
+		from Ippa_v1.utils import generate_unique_id
+		from AccessControl.utils import gen_password_hash
+
+		user_data = {
+			"player_id":generate_unique_id("IPPA"),
+			"email_id":params.get("email_id"),
+			"password":gen_password_hash(params.get("password"))
+		}
+		return user_data
+
 	def create_user(self, params):
 
 		self._init_user_params(params)
 		self._validate_user_data()
-		user = IppaUser.objects.filter(Q(email_id=self.email_id)  
-									|Q(user_name=self.user_name))
+		user = IppaUser.objects.filter(email_id=self.email_id)
 		if user.exists():
 			raise Exception(USER_ALREADY_EXISTS_STR)
-		user_data_set = get_user_data_dict(params)
+		user_data_set = self._get_user_data_dict(params)
 		with transaction.atomic():
 			ippa_user = IppaUser.objects.create(**user_data_set)
 		return ippa_user
@@ -81,6 +90,14 @@ class IppaUser(BaseModel):
 
 	def __unicode__(self):
 		return str(self.player_id) + " " + str(self.name)
+
+	def serialize(self):
+
+		user_details = dict()
+		user_details["player_id"] = self.player_id
+		user_details["email_id"] = self.email_id
+		user_details["referral_code"] = self.referral_code
+		return user_details
 
 	def updated_user_info(self, **kwargs):
 		self.name = kwargs.get("name")

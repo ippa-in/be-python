@@ -34,7 +34,14 @@ class SignUp(View):
 				self.is_updated_info = self.is_updated_info or\
 						updated_value != eval("self.edited_user."+field)
 
+	def get(self, request, *args, **kwargs):
 
+		try:
+			self.response["res_str"] = "Player details fetch successfully."
+			self.response["res_data"] = request.user.serialize()
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
 
 	def post(self, request, *args, **kwargs):
 		"""

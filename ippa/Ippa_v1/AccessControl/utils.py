@@ -4,7 +4,6 @@ import string
 import random
 
 from AccessControl.constants import *
-from Ippa_v1.utils import generate_unique_id
 from Ippa_v1.constants import REGEX_PASSWORD_POLICY, EMAIL_REGEX
 
 def valid_email_id(email_id):
@@ -14,7 +13,6 @@ def valid_email_id(email_id):
 	return False
 
 def validate_password(password):
-	import pdb;pdb.set_trace()
 	assert password.strip() != "", INVAILD_PASSWORD_STR
 
 	if not re.match(REGEX_PASSWORD_POLICY, password):
@@ -22,18 +20,6 @@ def validate_password(password):
 
 def gen_password_hash(password):
 	return str(hashlib.sha256(password).hexdigest())
-
-def get_user_data_dict(params):
-	"""Prepare data for creation of ippa user."""
-
-	from AccessControl.models import IppaUser
-
-	user_data = {
-		"player_id":generate_unique_id("IPPA"),
-		"email_id":params.get("email_id"),
-		"password":gen_password_hash(params.get("password"))
-	}
-	return user_data
 
 def create_auth_token(player_id):
 
