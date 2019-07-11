@@ -10,3 +10,9 @@ create muliple environment and database instance.
 create different git branch.
 configure domain name using root53 service.
 change python version.
+
+
+#requirements from decorators
+Validate token
+Check mandatory params
+add user in request

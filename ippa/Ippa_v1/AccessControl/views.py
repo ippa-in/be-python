@@ -6,6 +6,7 @@ from django.http import QueryDict
 from AccessControl.models import *
 from AccessControl.utils import authenticate_user
 from Ippa_v1.responses import *
+from Ippa_v1.decorators import decorator_4xx
 
 class SignUp(View):
 	
@@ -58,12 +59,12 @@ class SignUp(View):
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
+	@decorator_4xx(["name"])
 	def put(self, request, *args, **kwargs):
 		"""
 		Update player details if any data is being updated.
 		"""
-
-		params = QueryDict(request.body)
+		params = request.params_dict
 		self.edited_user = request.user
 		try:
 			self._init_user_details(params)
