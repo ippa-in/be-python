@@ -35,15 +35,18 @@ class SignUp(View):
 				self.is_updated_info = self.is_updated_info or\
 						updated_value != eval("self.edited_user."+field)
 
+	@decorator_4xx([])
 	def get(self, request, *args, **kwargs):
 
 		try:
 			self.response["res_str"] = "Player details fetch successfully."
 			self.response["res_data"] = request.user.serialize()
+			return send_200(self.response)
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
+	@decorator_4xx(['email_id', 'password', 'referral_code'])
 	def post(self, request, *args, **kwargs):
 		"""
 		Register a player after validating email-id and password format.
