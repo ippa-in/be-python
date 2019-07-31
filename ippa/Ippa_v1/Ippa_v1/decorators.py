@@ -49,7 +49,7 @@ class decorator_4xx(object):
 			try:
 				user = IppaUser.objects.get(player_id=player_id, is_deleted=0)
 			except IppaUser.DoesNotExist:
-				return HttpResponse("Invalid User", status_code=401)
+				return HttpResponse("Invalid User", status=401)
 
 			request.user = user
 

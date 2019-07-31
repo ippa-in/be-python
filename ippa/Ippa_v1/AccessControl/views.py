@@ -46,7 +46,6 @@ class SignUp(View):
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
-	@decorator_4xx(['email_id', 'password', 'referral_code'])
 	def post(self, request, *args, **kwargs):
 		"""
 		Register a player after validating email-id and password format.

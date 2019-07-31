@@ -3,3 +3,6 @@
 *.pyc
 Ippa_v1/Ippa_v1/db.sqlite3
 Ippa_v1/Ippa_v1/todo.txt
+.DS_Store
+ippa/.DS_Store
+ippa3.pem
