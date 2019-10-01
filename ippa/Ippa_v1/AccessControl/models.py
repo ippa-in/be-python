@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, transaction
-from django.db.models import Q
+from django.contrib.postgres.fields import ArrayField, JSONField
 
 from AccessControl.constants import *
 from Ippa_v1.constants import *
@@ -63,10 +63,8 @@ class IppaUser(BaseModel):
 
 	KYC_APPROVED = 0
 	KYC_PENDING = 1
-	KYC_NOT_INITIATED = 3
 	KYC_DECLINED = 2
-	KYC_STATUS = ((KYC_NOT_INITIATED, 'Not-initiated'),
-				  (KYC_PENDING, 'Pending'),
+	KYC_STATUS = ((KYC_PENDING, 'Pending'),
 				  (KYC_APPROVED, 'Approved'),
 				  (KYC_DECLINED, 'Declined'),)
 
@@ -79,12 +77,17 @@ class IppaUser(BaseModel):
 	is_admin = models.BooleanField(default=False)
 	password = models.TextField(max_length=255)
 	is_email_verified = models.BooleanField(default=False)
-	poi_image = models.TextField(null=True, blank=True)
+	is_mobile_number_verified = models.BooleanField(default=False)
+	poi_image = models.TextField(null=True, blank=True, help_text="Proof of identity.(Kyc currently)")
+	poa_image = models.TextField(null=True, blank=True, help_text="Proof of address.")
 	kyc_status = models.PositiveSmallIntegerField(default=3, choices=KYC_STATUS)
 	referral_code = models.CharField(max_length=255, null=True, blank=True)
 	city = models.CharField(max_length=255, null=True, blank=True)
 	country = models.CharField(max_length=255, default="India")
 	profile_image = models.TextField(null=True, blank=True)
+	favourite_hands = ArrayField(models.CharField(blank=True, max_length=10), blank=True, null=True, default=list())
+	achievements = JSONField(default=list(), null=True, blank=True)
+	points = JSONField(default=POINTS_DICT, null=True, blank=True)
 
 	objects = IppaUserManager()
 
@@ -97,11 +100,25 @@ class IppaUser(BaseModel):
 		user_details["player_id"] = self.player_id
 		user_details["email_id"] = self.email_id
 		user_details["referral_code"] = self.referral_code
+		user_details["name"] = self.name
+		user_details["user_name"] = self.user_name
+		user_details["dob"]	= self.dob
+		user_details["mobile_number"] = self.mobile_number
+		user_details["email_id"] = self.email_id
+		user_details["points"] = self.points
+		user_details["favourite_hands"] = self.favourite_hands
+		user_details["achievements"] = sorted(self.achievements, key=lambda achi: achi["order"])
 		return user_details
 
-	def updated_user_info(self, **kwargs):
-		self.name = kwargs.get("name")
-		self.dob = kwargs.get("dob")
-		self.mobile_number = kwargs.get("mobile_number")
-		self.city = kwargs.get("city")
+	def update_user_info(self, params_dict):
+
+		for key, value in params_dict.iteritems():
+			if key == "name" and value:
+				self.name = value
+			if key == "dob" and value:
+				self.dob = value
+			if key == "city" and value:
+				self.city = value
+			if key == "favourite_hands" and value:
+				self.favourite_hands.append(value)
 		self.save()

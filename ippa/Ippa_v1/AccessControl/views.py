@@ -1,4 +1,5 @@
 import re
+import json
 
 from django.views.generic import View
 from django.http import QueryDict
@@ -6,6 +7,7 @@ from django.http import QueryDict
 from AccessControl.models import *
 from AccessControl.utils import authenticate_user
 from Ippa_v1.responses import *
+from Ippa_v1.utils import copy_content_to_s3
 from Ippa_v1.decorators import decorator_4xx
 
 class SignUp(View):
@@ -18,22 +20,6 @@ class SignUp(View):
 	def dispatch(self, *args, **kwargs):
 
 		return super(self.__class__, self).dispatch(*args, **kwargs)
-
-	def _init_user_details(self, params):
-
-		self.name = params.get("name")
-		self.dob = params.get("dob")
-		self.mobile_number = params.get("mobile_number")
-		self.city = params.get("city")
-
-	def _is_info_updated(self):
-
-		self.is_updated_info = False
-		for field in EDITABLE_FIELDS:
-			updated_value = eval("self."+field)
-			if updated_value:
-				self.is_updated_info = self.is_updated_info or\
-						updated_value != eval("self.edited_user."+field)
 
 	@decorator_4xx([])
 	def get(self, request, *args, **kwargs):
@@ -61,22 +47,14 @@ class SignUp(View):
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
-	@decorator_4xx(["name"])
+	@decorator_4xx([])
 	def put(self, request, *args, **kwargs):
 		"""
 		Update player details if any data is being updated.
 		"""
-		params = request.params_dict
-		self.edited_user = request.user
+		player = request.user
 		try:
-			self._init_user_details(params)
-			self._is_info_updated()
-			if self.is_updated_info:
-				with transaction.atomic():
-					self.edited_user.updated_user_info(name=self.name,
-													   dob=self.dob,
-													   mobile_number=self.mobile_number,
-													   city=self.city)
+			player.update_user_info(request.params_dict)
 			self.response["res_str"] = "Player information successfully updated."
 			return send_200(self.response)
 		except Exception as ex:
@@ -112,6 +90,42 @@ class LogIn(View):
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
+
+class UploadAchivements(View):
+
+	def __init__(self):
+		"""Initialize response."""
+
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx([])
+	def post(self, request, *args, **kwargs):
+
+		player = request.user
+		achievement_file = request.FILES.get("achievement")
+		file_name = request.POST.get("file_name")
+
+		try:
+			order_no = len(player.achievements) + 1
+			file_s3_url = copy_content_to_s3(achievement_file, "KYC/"+file_name)
+			player.achievements.append({
+					"order":order_no,
+					"unique_id":file_name,
+					"s3_url":file_s3_url
+				})
+			player.save()
+			self.response["res_data"] = {"file_url":file_s3_url}
+			self.response["res_str"] = "Achievement added successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+
 
 
 

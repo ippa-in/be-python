@@ -10,7 +10,16 @@ LOGIN_SUCCESSFUL = "Login Successfully."
 TOKEN_STR_FIRST = "WHENIPLAYPOKER"
 TOKEN_STR_LAST = "IDONTLIKELOSINGTHEPOT"
 
-EDITABLE_FIELDS = ["name", "dob", "mobile_number", "city"]
+EDITABLE_FIELDS = ["name", "dob", "mobile_number", "city", "favourite_hand"]
 
 #LOGIN CODES
 SUCCESSFUL_LOGIN = "0"
+
+#DEFAULT_POINTS_FOR_PLAYERS
+POINTS_DICT = {
+	"total_points":0,
+	"monthly_points":0,
+	"redeemed_points":0,
+	"redeemable_points":0,
+	"current_points":0
+}

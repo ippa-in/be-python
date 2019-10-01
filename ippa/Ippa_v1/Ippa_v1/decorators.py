@@ -36,7 +36,6 @@ class decorator_4xx(object):
 			request = args[1]
 			params = self._get_all_params(request)
 			request.params_dict = params
-
 			#check for mandatory params.
 			params_list = params.keys()
 			missing_params = [params for params in self.mand_params if params not in params_list]
