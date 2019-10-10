@@ -22,5 +22,6 @@ urlpatterns = [
     url(r'^access/', include('AccessControl.urls')),
     url(r'^transaction/', include('Transaction.urls')),
     url(r'^network/', include('Network.urls')),
+    url(r'^filter/', include('Filter.urls')),
 
 ]

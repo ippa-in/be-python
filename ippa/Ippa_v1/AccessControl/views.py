@@ -5,9 +5,9 @@ from django.views.generic import View
 from django.http import QueryDict
 
 from AccessControl.models import *
-from AccessControl.utils import authenticate_user
+from AccessControl.utils import authenticate_user, send_kyc_verified_email_to_user
 from Ippa_v1.responses import *
-from Ippa_v1.utils import copy_content_to_s3
+from Ippa_v1.utils import copy_content_to_s3, generate_unique_id
 from Ippa_v1.decorators import decorator_4xx
 
 class SignUp(View):
@@ -94,7 +94,6 @@ class LogIn(View):
 class UploadAchivements(View):
 
 	def __init__(self):
-		"""Initialize response."""
 
 		self.response = init_response()
 
@@ -125,6 +124,75 @@ class UploadAchivements(View):
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
+
+class UploadKYC(View):
+
+	def __init__(self):
+
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx([])
+	def post(self, request, *args, **kwargs):
+
+		player = request.user
+		poi_doc = request.FILES.get("poi")
+		poa_doc = request.FILES.get("poa")
+		try:
+			s3_url_dict = dict()
+			if poi_doc:
+				file_name = generate_unique_id("FILE")
+				file_s3_url = copy_content_to_s3(poi_doc, "KYC/"+file_name)
+				player.poi_image = file_s3_url
+				s3_url_dict["poi_s3_url"] = file_s3_url
+			if poa_doc:
+				file_name = generate_unique_id("FILE")
+				file_s3_url = copy_content_to_s3(poa_doc, "KYC/"+file_name)
+				player.poa_image = file_s3_url
+				s3_url_dict["poa_s3_url"] = file_s3_url
+			player.save()
+			self.response["res_data"] = s3_url_dict
+			self.response["res_str"] = "KYC documents added successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+	@decorator_4xx([])
+	def put(self, request, *args, **kwargs):
+		player = request.user
+		params = request.params_dict
+		user_id = params.get("user_id")
+		action_list = json.loads(params.get("action_list"))
+		try:
+			if player.is_admin:
+				user = IppaUser.objects.get(player_id=user_id)
+				for action in action_list:
+					if action.get("doc_type") == "poi":
+						if action.get("action_type") == "approved":
+							user.poi_status = IppaUser.KYC_APPROVED
+						elif action.get("action_type") == "declined":
+							user.poi_status = IppaUser.KYC_DECLINED
+						send_kyc_verified_email_to_user(KYC_DETAILS_APPROVED, 
+										"proof of identity", action, user)
+					elif action.get("doc_type") == "poa":
+						if action.get("action_type") == "approved":
+							user.poa_status = IppaUser.KYC_APPROVED
+						elif action.get("action_type") == "declined":
+							user.poa_status = IppaUser.KYC_DECLINED
+						send_kyc_verified_email_to_user(KYC_DETAILS_APPROVED, 
+										"proof of address", action, user)
+				user.save()
+			else:
+				raise ACTION_NOT_ALLOWED(STR_ACTION_NOT_ALLOWED)
+			self.response["res_str"] = "KYC documents verified successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
 
 
 

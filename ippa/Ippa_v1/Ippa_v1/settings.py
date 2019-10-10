@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'Network',
     'Transaction',
     'NotificationEngine',
+    'Filter'
 ]
 
 MIDDLEWARE_CLASSES = [

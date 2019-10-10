@@ -61,6 +61,23 @@ def authenticate_user(email_id, password):
 		res_str = LOGIN_SUCCESSFUL
 	return code, res_str, response
 
+def send_kyc_verified_email_to_user(notification_key, doc_type, action, user, to=[], cc=[]):
+	from NotificationEngine.interface import initiate_notification
+
+	notification_obj = {
+		"identifier_dict":{
+			"user_name":user.name,
+			"action":action,
+			"doc_type":doc_type
+		},
+		"to":[user.email_id]
+	}
+
+	try:
+		initiate_notification(notification_key, notification_obj)
+	except Exception as ex:
+		pass
+
 
 
 

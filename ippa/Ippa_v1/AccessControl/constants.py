@@ -23,3 +23,6 @@ POINTS_DICT = {
 	"redeemable_points":0,
 	"current_points":0
 }
+
+KYC_DETAILS_APPROVED = "kyc_details_approved_notification"
+STR_ACTION_NOT_ALLOWED = "Unauthourised"

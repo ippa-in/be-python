@@ -22,7 +22,6 @@ class MailManager(models.Manager):
 
 	def send_mail(self, subject, mail_body, from_email, to, cc=[], bcc=[], attachments=[]):
 
-		import pdb;pdb.set_trace()
 		from_email="f2159838968724@gmail.com"
 		msg = EmailMultiAlternatives(subject, mail_body, from_email, to, cc, bcc, attachments)
 		msg.attach_alternative(mail_body, "text/html")
