@@ -4,7 +4,7 @@ USER_ALREADY_EXISTS_STR = "Your profile already exist with same username or emai
 VERIFY_YOUR_EMAIL_ID = "Please verify your email ID."
 USER_PROFILE_DOES_NOT_EXISTS_STR = 'User does not exist in our system.'
 INVAILD_PASSWORD_STR = 'You have entered invalid email-id or password.'
-
+PASSWORD_DIDNT_MATCH = "Password and Reset Password are different."
 LOGIN_SUCCESSFUL = "Login Successfully."
 
 TOKEN_STR_FIRST = "WHENIPLAYPOKER"
@@ -26,3 +26,5 @@ POINTS_DICT = {
 
 KYC_DETAILS_APPROVED = "kyc_details_approved_notification"
 STR_ACTION_NOT_ALLOWED = "Unauthourised"
+EMAIL_VERIFICATION_NOTI = "email_verfication_notification"
+RESET_PASSWORD_NOTI = "reset_password_notification"

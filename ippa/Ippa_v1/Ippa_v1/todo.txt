@@ -16,3 +16,9 @@ change python version.
 Validate token
 Check mandatory params
 add user in request
+
+#Create dev environment and database.
+
+
+#Final pending list
+Get complete user details

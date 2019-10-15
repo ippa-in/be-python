@@ -28,3 +28,10 @@ S3_URL = S3_BUCKET_URL + "/" + S3_BUCKET_NAME
 
 #Email password
 EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD")
+
+#Host detail
+HOST_FT_URL = os.environ.get("HOST_FT_URL")
+HTTP_PROTOCOL = os.environ.get("HTTP_PROTOCOL")
+
+#Redis detail
+HOST = os.environ.get("HOST")

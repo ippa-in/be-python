@@ -5,6 +5,7 @@ from django.utils.decorators import available_attrs
 from django.http import QueryDict
 
 from AccessControl.models import IppaUser
+from .redis_utils import set_expire_time, is_token_exists
 
 class decorator_4xx(object):
 
@@ -45,11 +46,19 @@ class decorator_4xx(object):
 
 			#validate token if valid add user to request object(todo)
 			player_id = request.META.get("HTTP_PLAYER_ID")
+			token = request.META.get("HTTP_PLAYER_TOKEN")
 			try:
 				user = IppaUser.objects.get(player_id=player_id, is_deleted=0)
 			except IppaUser.DoesNotExist:
 				return HttpResponse("Invalid User", status=401)
 
+			#check for email validation
+			if not is_token_exists(token):
+				return HttpResponse("Invalid User", status=401)
+			if not user.is_email_verified:
+				return HttpResponse("Please verify your email id.", status=200)
+
+			set_expire_time(token)
 			request.user = user
 
 			return func(*args, **kwargs)

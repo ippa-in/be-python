@@ -23,6 +23,7 @@ class IppaUserManager(models.Manager):
 		self.email_id = params.get("email_id")
 		self.password = params.get("password")
 		self.referral_code = params.get("referral_code")
+		self.name = params.get("name")
 
 	def _validate_user_data(self):
 
@@ -40,7 +41,8 @@ class IppaUserManager(models.Manager):
 		user_data = {
 			"player_id":generate_unique_id("IPPA"),
 			"email_id":params.get("email_id"),
-			"password":gen_password_hash(params.get("password"))
+			"password":gen_password_hash(params.get("password")),
+			"name":params.get("name")
 		}
 		return user_data
 
@@ -61,9 +63,9 @@ class IppaUser(BaseModel):
 		Users can be admin or players.
 	"""
 
-	KYC_APPROVED = 0
-	KYC_PENDING = 1
-	KYC_DECLINED = 2
+	KYC_APPROVED = "Verified"
+	KYC_PENDING = "Pending"
+	KYC_DECLINED = "Declined"
 	KYC_STATUS = ((KYC_PENDING, 'Pending'),
 				  (KYC_APPROVED, 'Approved'),
 				  (KYC_DECLINED, 'Declined'),)
@@ -80,8 +82,8 @@ class IppaUser(BaseModel):
 	is_mobile_number_verified = models.BooleanField(default=False)
 	poi_image = models.TextField(null=True, blank=True, help_text="Proof of identity.(Kyc currently)")
 	poa_image = models.TextField(null=True, blank=True, help_text="Proof of address.")
-	poi_status = models.PositiveSmallIntegerField(default=3, choices=KYC_STATUS)
-	poa_status = models.PositiveSmallIntegerField(default=3, choices=KYC_STATUS)
+	poi_status = models.CharField(max_length=255, default="Pending", choices=KYC_STATUS)
+	poa_status = models.CharField(max_length=255, default="Pending", choices=KYC_STATUS)
 	referral_code = models.CharField(max_length=255, null=True, blank=True)
 	city = models.CharField(max_length=255, null=True, blank=True)
 	country = models.CharField(max_length=255, default="India")
@@ -100,7 +102,6 @@ class IppaUser(BaseModel):
 		user_details = dict()
 		user_details["player_id"] = self.player_id
 		user_details["email_id"] = self.email_id
-		user_details["referral_code"] = self.referral_code
 		user_details["name"] = self.name
 		user_details["user_name"] = self.user_name
 		user_details["dob"]	= self.dob
@@ -109,17 +110,18 @@ class IppaUser(BaseModel):
 		user_details["points"] = self.points
 		user_details["favourite_hands"] = self.favourite_hands
 		user_details["achievements"] = sorted(self.achievements, key=lambda achi: achi["order"])
+		user_details["profile_image"] = self.profile_image
 		return user_details
 
 	def update_user_info(self, params_dict):
 
 		for key, value in params_dict.iteritems():
-			if key == "name" and value:
-				self.name = value
 			if key == "dob" and value:
 				self.dob = value
 			if key == "city" and value:
 				self.city = value
+			if key == "mobile_number" and value:
+				self.mobile_number = value
 			if key == "favourite_hands" and value:
 				self.favourite_hands.append(value)
 		self.save()

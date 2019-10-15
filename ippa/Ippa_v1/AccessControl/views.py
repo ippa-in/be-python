@@ -5,10 +5,14 @@ from django.views.generic import View
 from django.http import QueryDict
 
 from AccessControl.models import *
-from AccessControl.utils import authenticate_user, send_kyc_verified_email_to_user
+from AccessControl.utils import (authenticate_user, send_kyc_verified_email_to_user,
+								send_email_verification_link, send_reset_password_link,
+								create_auth_token, validate_password, gen_password_hash)
+from AccessControl.constants import *
 from Ippa_v1.responses import *
-from Ippa_v1.utils import copy_content_to_s3, generate_unique_id
+from Ippa_v1.utils import (copy_content_to_s3, generate_unique_id)
 from Ippa_v1.decorators import decorator_4xx
+from Ippa_v1.redis_utils import set_token, get_token
 
 class SignUp(View):
 	
@@ -36,10 +40,13 @@ class SignUp(View):
 		"""
 		Register a player after validating email-id and password format.
 		"""
-
 		params = request.POST
 		try:
 			user = IppaUser.objects.create_user(params)
+			email_id = params.get("email_id")
+			token = create_auth_token(user.player_id)
+			set_token(token, user.player_id)
+			send_email_verification_link(EMAIL_VERIFICATION_NOTI, token, user)
 			self.response["res_str"] = "Player registered successfully."
 			self.response["res_data"] = {"player_id":user.pk}
 			return send_201(self.response)
@@ -79,9 +86,8 @@ class LogIn(View):
 		password = params.get("password")
 		try:
 			code, res_str, res_data = authenticate_user(email_id, password)
-			self.response["res_str"] = res_str
 			if code != SUCCESSFUL_LOGIN:
-				return send_400(self.response)
+				raise Exception(res_str)
 			resp = send_200(self.response)
 			resp["PLAYER-ID"] = res_data.get("cid")
 			resp["PLAYER-TOKEN"] = res_data.get("token")
@@ -106,14 +112,14 @@ class UploadAchivements(View):
 
 		player = request.user
 		achievement_file = request.FILES.get("achievement")
-		file_name = request.POST.get("file_name")
+		title = request.POST.get("title")
 
 		try:
 			order_no = len(player.achievements) + 1
-			file_s3_url = copy_content_to_s3(achievement_file, "KYC/"+file_name)
+			file_s3_url = copy_content_to_s3(achievement_file, "Achievement")
 			player.achievements.append({
 					"order":order_no,
-					"unique_id":file_name,
+					"unique_id":title,
 					"s3_url":file_s3_url
 				})
 			player.save()
@@ -134,6 +140,23 @@ class UploadKYC(View):
 	def dispatch(self, *args, **kwargs):
 
 		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx([])
+	def get(self, request, *args, **kwargs):
+
+		user = request.user
+		try:
+			kyc_details = dict()
+			kyc_details["poi_url"] = user.poi_image if user.poi_image else ""
+			kyc_details["poi_status"] = user.poi_status if user.poi_status else ""
+			kyc_details["poa_url"] = user.poa_image if user.poa_image else ""
+			kyc_details["poa_status"] = user.poa_status if user.poa_status else ""
+			self.response["res_str"] = "kyc details fetch successfully."
+			self.response["res_data"] = kyc_details
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
 
 	@decorator_4xx([])
 	def post(self, request, *args, **kwargs):
@@ -195,5 +218,101 @@ class UploadKYC(View):
 			return send_400(self.response)
 
 
+class VerifyEmail(View):
+	
+	def __init__(self):
+		"""Initialize response."""
+
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	def post(self, request, *args, **kwargs):
+
+		params = request.POST
+		try:
+			token = params.get("token")
+			player_id = get_token(token)
+			user = IppaUser.objects.get(player_id=player_id)
+			user.is_email_verified = True
+			user.save()
+			self.response["res_str"] = "Email verification successfull."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class ResetPassword(View):
+
+	def __init__(self):
+
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	def get(self, request, *args, **kwargs):
+
+		params = request.GET
+		email_id = params.get("email_id")
+		try:
+			user = IppaUser.objects.get(email_id=email_id)
+			token = create_auth_token(user.player_id)
+			set_token(token, user.player_id)
+			send_reset_password_link(RESET_PASSWORD_NOTI, token, user)
+			self.response["res_str"] = "Reset password link sent to email id."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+	def post(self, request, *args, **kwargs):
+		params = request.POST
+		try:
+			password = params.get("password")
+			repeat_password = params.get("repeat_password")
+			if not password == repeat_password:
+				raise Exception(PASSWORD_DIDNT_MATCH)
+			validate_password(password)
+			token = params.get("token")
+			player_id = get_token(token)
+			user = IppaUser.objects.get(player_id=player_id)
+			password_hash = gen_password_hash(params.get("password"))
+			user.password = password_hash
+			user.save()
+			self.response["res_str"] = "Successfully updated the password."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class UploadProfilePic(View):
+
+	def __init__(self):
+
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx([])
+	def post(self, request, *args, **kwargs):
+
+		player = request.user
+		profile_pic = request.FILES.get("profile_pic")
+		try:
+			file_s3_url = copy_content_to_s3(profile_pic, "Profile_pic")
+			player.profile_image = file_s3_url
+			player.save()
+			self.response["res_data"] = {"file_url":file_s3_url}
+			self.response["res_str"] = "Profile Picture added successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
 
 

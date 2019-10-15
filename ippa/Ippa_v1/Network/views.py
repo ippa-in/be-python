@@ -64,7 +64,7 @@ class NetworkTagging(View):
 	def get(self, request, *args, **kwargs):
 
 		try:
-			tagging_list = PlayerTag.objects.filter((Q(status="Active") 
+			tagging_list = PlayerTag.objects.filter((Q(status="Pending") 
 													|Q(status="Verified")),
 													user=request.user)
 			tagging_res = list()

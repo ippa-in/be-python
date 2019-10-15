@@ -12,3 +12,14 @@ services:
       - ${PWD}/Ippa_v1:/rest/Ippa_v1
     ports:
       - 8082:8082
+
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - data:/data
+
+volumes:
+  logs:
+  data:
+  esdata:

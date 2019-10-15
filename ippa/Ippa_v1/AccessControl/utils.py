@@ -5,6 +5,8 @@ import random
 
 from AccessControl.constants import *
 from Ippa_v1.constants import REGEX_PASSWORD_POLICY, EMAIL_REGEX
+from Ippa_v1.redis_utils import set_token, set_token_exp
+from Ippa_v1.server_config import HOST_FT_URL, HTTP_PROTOCOL
 
 def valid_email_id(email_id):
 
@@ -54,6 +56,7 @@ def authenticate_user(email_id, password):
 		return "3", res_str, {}
 	else:
 		token = create_auth_token(user.player_id)
+		set_token_exp(token, user.player_id)
 		response = {
 			"token":token,
 			"cid": user.player_id
@@ -78,7 +81,39 @@ def send_kyc_verified_email_to_user(notification_key, doc_type, action, user, to
 	except Exception as ex:
 		pass
 
+def send_email_verification_link(notification_key, token, user, to=[], cc=[]):
+	from NotificationEngine.interface import initiate_notification
 
+	link = HTTP_PROTOCOL + HOST_FT_URL + "/verify-email/?q=" + token 
+	notification_obj = {
+		"identifier_dict":{
+			"user_name":user.name,
+			"link":link
+		},
+		"to":[user.email_id]
+	}
+
+	try:
+		initiate_notification(notification_key, notification_obj)
+	except Exception as ex:
+		pass
+
+def send_reset_password_link(notification_key, token, user, to=[], cc=[]):
+	from NotificationEngine.interface import initiate_notification
+
+	link = HTTP_PROTOCOL + HOST_FT_URL + "/frgt-pass/?q=" + token 
+	notification_obj = {
+		"identifier_dict":{
+			"user_name":user.name,
+			"link":link
+		},
+		"to":[user.email_id]
+	}
+
+	try:
+		initiate_notification(notification_key, notification_obj)
+	except Exception as ex:
+		pass
 
 
 

@@ -185,8 +185,7 @@ class BankAccountView(View):
 		user = request.user
 		try:
 			with transaction.atomic():
-				bank_acc = BankAccount.objects.filter(user=request.user, 
-											status=BankAccount.VERIFIED)
+				bank_acc = BankAccount.objects.filter(user=request.user)
 				if bank_acc:
 					raise ACCOUNT_ALREADY_EXISTS(ACCOUNT_EXISTS_STR)
 				bank = Bank.objects.get(bank_id=params.get("bank_id"))
