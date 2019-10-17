@@ -46,9 +46,9 @@ def authenticate_user(email_id, password):
 		res_str = USER_PROFILE_DOES_NOT_EXISTS_STR
 		return "1", res_str, {}
 	user = user.first()
-	if not user.is_email_verified:
-		res_str = VERIFY_YOUR_EMAIL_ID
-		return "2", res_str, {}
+	# if not user.is_email_verified:
+	# 	res_str = VERIFY_YOUR_EMAIL_ID
+	# 	return "2", res_str, {}
 
 	saved_password = gen_password_hash(password)
 	if not saved_password == user.password:
