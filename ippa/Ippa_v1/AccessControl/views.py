@@ -11,7 +11,7 @@ from AccessControl.utils import (authenticate_user, send_kyc_verified_email_to_u
 from AccessControl.constants import *
 from Ippa_v1.responses import *
 from Ippa_v1.utils import (copy_content_to_s3, generate_unique_id)
-from Ippa_v1.decorators import decorator_4xx
+from Ippa_v1.decorators import decorator_4xx, email_decorator_4xx
 from Ippa_v1.redis_utils import set_token, get_token
 
 class SignUp(View):
@@ -54,7 +54,7 @@ class SignUp(View):
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
-	@decorator_4xx([])
+	@email_decorator_4xx([])
 	def put(self, request, *args, **kwargs):
 		"""
 		Update player details if any data is being updated.
@@ -147,10 +147,14 @@ class UploadKYC(View):
 		user = request.user
 		try:
 			kyc_details = dict()
-			kyc_details["poi_url"] = user.poi_image if user.poi_image else ""
+			poi_image = user.poi_image.split(",") if user.poi_image else ""
+			kyc_details["poi_f_url"] = poi_image[0]
+			kyc_details["poi_b_url"] = poi_image[1]
 			kyc_details["poi_status"] = user.poi_status if user.poi_status else ""
-			kyc_details["poa_url"] = user.poa_image if user.poa_image else ""
-			kyc_details["poa_status"] = user.poa_status if user.poa_status else ""
+			poa_image = user.poa_image.split(",") if user.poa_image else ""
+			kyc_details["poa_f_url"] = poa_image[0]
+			kyc_details["poa_b_url"] = poa_image[1]
+			kyc_details["poa_status"] = user.poi_status if user.poi_status else ""
 			self.response["res_str"] = "kyc details fetch successfully."
 			self.response["res_data"] = kyc_details
 			return send_200(self.response)
@@ -162,20 +166,31 @@ class UploadKYC(View):
 	def post(self, request, *args, **kwargs):
 
 		player = request.user
-		poi_doc = request.FILES.get("poi")
-		poa_doc = request.FILES.get("poa")
+		poi_doc_f = request.FILES.get("poi_f")
+		poi_doc_b = request.FILES.get("poi_b")
+		poa_doc_f = request.FILES.get("poa_f")
+		poa_doc_b = request.FILES.get("poa_b")
 		try:
 			s3_url_dict = dict()
-			if poi_doc:
-				file_name = generate_unique_id("FILE")
-				file_s3_url = copy_content_to_s3(poi_doc, "KYC/"+file_name)
-				player.poi_image = file_s3_url
-				s3_url_dict["poi_s3_url"] = file_s3_url
-			if poa_doc:
-				file_name = generate_unique_id("FILE")
-				file_s3_url = copy_content_to_s3(poa_doc, "KYC/"+file_name)
-				player.poa_image = file_s3_url
-				s3_url_dict["poa_s3_url"] = file_s3_url
+			poi_doc_f_s3_url, poi_doc_b_s3_url, poa_doc_f_s3_url, poa_doc_b_s3_url = "","","",""
+			if poi_doc_f:
+				file_name = generate_unique_id("FRONT")
+				poi_doc_f_s3_url = copy_content_to_s3(poi_doc_f, "KYC/"+file_name)
+				s3_url_dict["poi_doc_f_s3_url"] = poi_doc_f_s3_url
+			if poi_doc_b:
+				file_name = generate_unique_id("BACK")
+				poi_doc_b_s3_url = copy_content_to_s3(poi_doc_b, "KYC/"+file_name)
+				s3_url_dict["poi_doc_b_s3_url"] = poi_doc_b_s3_url
+			if poa_doc_f:
+				file_name = generate_unique_id("FRONT")
+				poa_doc_f_s3_url = copy_content_to_s3(poa_doc_f, "KYC/"+file_name)
+				s3_url_dict["poa_doc_f_s3_url"] = poa_doc_f_s3_url
+			if poa_doc_b:
+				file_name = generate_unique_id("BACK")
+				poa_doc_b_s3_url = copy_content_to_s3(poa_doc_b, "KYC/"+file_name)
+				s3_url_dict["poa_doc_b_s3_url"] = poa_doc_b_s3_url
+			player.poi_image = poi_doc_f_s3_url + "," + poi_doc_b_s3_url
+			player.poa_image = poa_doc_f_s3_url + "," + poa_doc_b_s3_url
 			player.save()
 			self.response["res_data"] = s3_url_dict
 			self.response["res_str"] = "KYC documents added successfully."

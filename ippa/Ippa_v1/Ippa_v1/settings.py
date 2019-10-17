@@ -70,6 +70,7 @@ CORS_ALLOW_HEADERS = (
     'authorization',
     'x-csrftoken',
     'PLAYER-ID',
+    'PLAYER-TOKEN'
 )
 
 TEMPLATES = [

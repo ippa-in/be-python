@@ -111,6 +111,7 @@ class IppaUser(BaseModel):
 		user_details["favourite_hands"] = self.favourite_hands
 		user_details["achievements"] = sorted(self.achievements, key=lambda achi: achi["order"])
 		user_details["profile_image"] = self.profile_image
+		user_details["is_email_verified"] = self.is_email_verified
 		return user_details
 
 	def update_user_info(self, params_dict):
