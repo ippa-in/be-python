@@ -116,7 +116,8 @@ class UploadAchivements(View):
 
 		try:
 			order_no = len(player.achievements) + 1
-			file_s3_url = copy_content_to_s3(achievement_file, "Achievement")
+			file_name = generate_unique_id("ACHIEVE")
+			file_s3_url = copy_content_to_s3(achievement_file, "ACHIEVE/"+file_name)
 			player.achievements.append({
 					"order":order_no,
 					"unique_id":title,
