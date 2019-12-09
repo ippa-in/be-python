@@ -25,7 +25,7 @@ class SignUp(View):
 
 		return super(self.__class__, self).dispatch(*args, **kwargs)
 
-	@decorator_4xx([])
+	@email_decorator_4xx([])
 	def get(self, request, *args, **kwargs):
 
 		try:
@@ -80,7 +80,6 @@ class LogIn(View):
 		return super(self.__class__, self).dispatch(*args, **kwargs)
 
 	def post(self, request, *args, **kwargs):
-
 		params = request.POST
 		email_id = params.get("email_id")
 		password = params.get("password")
@@ -149,13 +148,15 @@ class UploadKYC(View):
 		try:
 			kyc_details = dict()
 			poi_image = user.poi_image.split(",") if user.poi_image else ""
-			kyc_details["poi_f_url"] = poi_image[0]
-			kyc_details["poi_b_url"] = poi_image[1]
-			kyc_details["poi_status"] = user.poi_status if user.poi_status else ""
+			if poi_image:
+				kyc_details["poi_f_url"] = poi_image[0]
+				kyc_details["poi_b_url"] = poi_image[1]
+				kyc_details["poi_status"] = user.poi_status if user.poi_status else ""
 			poa_image = user.poa_image.split(",") if user.poa_image else ""
-			kyc_details["poa_f_url"] = poa_image[0]
-			kyc_details["poa_b_url"] = poa_image[1]
-			kyc_details["poa_status"] = user.poi_status if user.poi_status else ""
+			if poa_image:
+				kyc_details["poa_f_url"] = poa_image[0]
+				kyc_details["poa_b_url"] = poa_image[1]
+				kyc_details["poa_status"] = user.poi_status if user.poi_status else ""
 			self.response["res_str"] = "kyc details fetch successfully."
 			self.response["res_data"] = kyc_details
 			return send_200(self.response)
@@ -178,18 +179,22 @@ class UploadKYC(View):
 				file_name = generate_unique_id("FRONT")
 				poi_doc_f_s3_url = copy_content_to_s3(poi_doc_f, "KYC/"+file_name)
 				s3_url_dict["poi_doc_f_s3_url"] = poi_doc_f_s3_url
+				player.poi_status = IppaUser.KYC_PENDING
 			if poi_doc_b:
 				file_name = generate_unique_id("BACK")
 				poi_doc_b_s3_url = copy_content_to_s3(poi_doc_b, "KYC/"+file_name)
 				s3_url_dict["poi_doc_b_s3_url"] = poi_doc_b_s3_url
+				player.poi_status = IppaUser.KYC_PENDING
 			if poa_doc_f:
 				file_name = generate_unique_id("FRONT")
 				poa_doc_f_s3_url = copy_content_to_s3(poa_doc_f, "KYC/"+file_name)
 				s3_url_dict["poa_doc_f_s3_url"] = poa_doc_f_s3_url
+				player.poa_status = IppaUser.KYC_PENDING
 			if poa_doc_b:
 				file_name = generate_unique_id("BACK")
 				poa_doc_b_s3_url = copy_content_to_s3(poa_doc_b, "KYC/"+file_name)
 				s3_url_dict["poa_doc_b_s3_url"] = poa_doc_b_s3_url
+				player.poa_status = IppaUser.KYC_PENDING
 			player.poi_image = poi_doc_f_s3_url + "," + poi_doc_b_s3_url
 			player.poa_image = poa_doc_f_s3_url + "," + poa_doc_b_s3_url
 			player.save()

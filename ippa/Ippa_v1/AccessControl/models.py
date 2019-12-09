@@ -66,6 +66,7 @@ class IppaUser(BaseModel):
 	KYC_APPROVED = "Verified"
 	KYC_PENDING = "Pending"
 	KYC_DECLINED = "Declined"
+	KYC_NOT_UPLOADED = ""
 	KYC_STATUS = ((KYC_PENDING, 'Pending'),
 				  (KYC_APPROVED, 'Approved'),
 				  (KYC_DECLINED, 'Declined'),)
@@ -82,8 +83,8 @@ class IppaUser(BaseModel):
 	is_mobile_number_verified = models.BooleanField(default=False)
 	poi_image = models.TextField(null=True, blank=True, help_text="Proof of identity.(Kyc currently)")
 	poa_image = models.TextField(null=True, blank=True, help_text="Proof of address.")
-	poi_status = models.CharField(max_length=255, default="Pending", choices=KYC_STATUS)
-	poa_status = models.CharField(max_length=255, default="Pending", choices=KYC_STATUS)
+	poi_status = models.CharField(max_length=255, default="", choices=KYC_STATUS)
+	poa_status = models.CharField(max_length=255, default="", choices=KYC_STATUS)
 	referral_code = models.CharField(max_length=255, null=True, blank=True)
 	city = models.CharField(max_length=255, null=True, blank=True)
 	country = models.CharField(max_length=255, default="India")
