@@ -25,6 +25,14 @@ class IppaUserManager(models.Manager):
 		self.referral_code = params.get("referral_code")
 		self.name = params.get("name")
 
+	def _get_user_name(self, name):
+
+		user_name = name.replace(" ", "")
+		user_name = user_name.lower()
+		username_count = IppaUser.objects.filter(user_name__icontains=user_name).count()
+		user_name = user_name + str(username_count+1)
+		return user_name
+
 	def _validate_user_data(self):
 
 		from AccessControl.utils import valid_email_id, validate_password
@@ -37,12 +45,12 @@ class IppaUserManager(models.Manager):
 
 		from Ippa_v1.utils import generate_unique_id
 		from AccessControl.utils import gen_password_hash
-
 		user_data = {
 			"player_id":generate_unique_id("IPPA"),
 			"email_id":params.get("email_id"),
 			"password":gen_password_hash(params.get("password")),
-			"name":params.get("name")
+			"name":params.get("name"),
+			"user_name":self._get_user_name(params.get("name"))
 		}
 		return user_data
 
@@ -126,4 +134,9 @@ class IppaUser(BaseModel):
 				self.mobile_number = value
 			if key == "favourite_hands" and value:
 				self.favourite_hands.append(value)
+			if key == "user_name" and value:
+				username = IppaUser.objects.filter(user_name=value)
+				if username.exists():
+					raise Exception(USER_NAME_ALREADY_EXIST)
+				self.user_name = value
 		self.save()

@@ -6,6 +6,7 @@ USER_PROFILE_DOES_NOT_EXISTS_STR = 'User does not exist in our system.'
 INVAILD_PASSWORD_STR = 'You have entered invalid email-id or password.'
 PASSWORD_DIDNT_MATCH = "Password and Reset Password are different."
 LOGIN_SUCCESSFUL = "Login Successfully."
+USER_NAME_ALREADY_EXIST = "This username already taken. Try different one."
 
 TOKEN_STR_FIRST = "WHENIPLAYPOKER"
 TOKEN_STR_LAST = "IDONTLIKELOSINGTHEPOT"

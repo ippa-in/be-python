@@ -27,7 +27,7 @@ class decorator_4xx(object):
 		elif request.method == "POST":
 			params_dict = request.POST
 		elif request.method == "PUT":
-			params_dict = json.loads(request.body)
+			params_dict = QueryDict(request.body)
 		return params_dict
 
 	def __call__(self, func, *args, **kwargs):
@@ -75,14 +75,13 @@ class email_decorator_4xx(object):
 		self.mand_params = mand_params
 
 	def _get_all_params(self, request):
-
 		params_dict = dict()
 		if request.method == "GET":
 			params_dict = request.GET
 		elif request.method == "POST":
 			params_dict = request.POST
 		elif request.method == "PUT":
-			params_dict = json.loads(request.body)
+			params_dict = QueryDict(request.body)
 		return params_dict
 
 	def __call__(self, func, *args, **kwargs):
