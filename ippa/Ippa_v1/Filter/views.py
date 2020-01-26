@@ -66,7 +66,8 @@ class FilterView(View):
 		limit = params.get("limit")
 		offset = params.get("offset")
 		data_type = params.get("data_type")
-		query = json.loads(params.get("query", str(dict())))
+		pre_query = json.loads(params.get("query", str(dict())))
+		pre_sort = json.loads(params.get("sort_query", str(list())))
 		try:
 			search_config = SearchConfiguration.objects.get(display_name=params.get("display_name"))
 			content_type = search_config.content_type
@@ -75,7 +76,7 @@ class FilterView(View):
 
 			search_id_value_map = dict()
 			if data_type == "all":
-				filter_query_set = model.objects.filter(is_deleted=False, **query)
+				filter_query_set = model.objects.filter(is_deleted=False, **pre_query)
 			else:
 				#apply filters
 				filter_search_field_ids = filters.keys()
@@ -125,6 +126,8 @@ class FilterView(View):
 					sort_field_list.append("-"+field_name)
 			filter_sorted_query_set = filter_query_set.order_by(*sort_field_list)
 
+			if data_type == "all":
+				filter_sorted_query_set = filter_sorted_query_set.order_by(*pre_sort)
 			#Return serialized response.
 			filter_sorted_query_data = model.objects.bulk_serializer(filter_sorted_query_set)
 			self.response["res_str"] = "Data fetched successfully."

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 
+from Ippa_v1.utils import *
 # Create your models here.
 class BaseModel(models.Model):
 
@@ -23,6 +24,12 @@ class DashBoardImageManager(models.Manager):
 											img_url=img_url, order=img_order_new)
 		return image
 
+	def bulk_serializer(self, queryset):
+
+		image_data = []
+		for obj in queryset:
+			image_data.append(obj.serializer())
+		return image_data
 
 class DashBoardImage(BaseModel):
 
@@ -64,6 +71,13 @@ class PointsManager(models.Manager):
 		file = Points.objects.create(title=title, total_records=no_of_rows, file_url=file_url)
 		return file
 
+	def bulk_serializer(self, queryset):
+
+		points_data = []
+		for obj in queryset:
+			points_data.append(obj.serialize())
+		return points_data
+
 class Points(BaseModel):
 
 	PENDING = "Pending"
@@ -92,6 +106,7 @@ class Points(BaseModel):
 		file_data["title"] = self.title
 		file_data["total_records"] = self.total_records
 		file_data["status"] = self.status
+		file_data["created_on"] = convert_datetime_to_string(self.created_on, "%d %b %Y %I:%M %p")
 		return file_data
 
 

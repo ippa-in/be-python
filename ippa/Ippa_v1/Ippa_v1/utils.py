@@ -33,4 +33,9 @@ def get_content_from_s3(key):
 	file = client.get_object(Bucket=S3_BUCKET_NAME, Key=key)
 	return file
 
+def convert_datetime_to_string(date, date_format):
+
+	date_str = date.strftime(date_format)
+	return date_str
+
 
