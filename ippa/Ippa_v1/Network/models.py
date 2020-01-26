@@ -91,7 +91,7 @@ class PlayerTag(BaseModel):
 	objects = PlayerTagManager()
 
 	def __unicode__(self):
-		return self.user_id + " " + self.network_id + " " + self.tag_name
+		return self.user_id + " " + self.network_id + " " + self.tag_user_name
 
 	def serialize(self):
 

@@ -26,4 +26,11 @@ def copy_content_to_s3(file, key):
 
 	return file_s3_url
 
+def get_content_from_s3(key):
+
+	client = boto3.client('s3', aws_access_key_id=AWS_SECRET_KEY_ID,
+							aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+	file = client.get_object(Bucket=S3_BUCKET_NAME, Key=key)
+	return file
+
 

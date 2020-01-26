@@ -57,38 +57,57 @@ class FilterView(View):
 
 	@decorator_4xx([])
 	def get(self, request, *args, **kwargs):
-		"""Filter and sort data based on display name."""
-
+		"""Filter and sort data based on display name.
+		data_type = all: don't apply any filter and return paginated data.
+		"""
 		params = request.params_dict
-		filters = json.loads(params.get("filters"))
-		sortable = json.loads(params.get("sortable"))
+		filters = json.loads(params.get("filters", str(dict())))
+		sortable = json.loads(params.get("sortable", str(dict())))
+		limit = params.get("limit")
+		offset = params.get("offset")
+		data_type = params.get("data_type")
+		query = json.loads(params.get("query", str(dict())))
 		try:
 			search_config = SearchConfiguration.objects.get(display_name=params.get("display_name"))
 			content_type = search_config.content_type
 			model = content_type.model_class()
 			select_related_fields = get_foreign_keys(model)
-			#apply filters
-			filter_search_field_ids = filters.keys()
-			search_fields = SearchField.objects.filter(pk__in=filter_search_field_ids, status=True,
-													search_config=search_config)
+
 			search_id_value_map = dict()
-			for search_field in search_fields:
-				search_id_value_map[str(search_field.pk)] = search_field.serialize()
-			filter_dict = dict()
-			for key, value in search_id_value_map.iteritems():
-				filter_values = filters.get(key)
-				filter_type = value.get("filter_type")
-				field_name = value.get("field_name")
-				if filter_type == "daterange":
-					filter_dict[field_name+"__gte"] = filter_values.get("min_range")
-					filter_dict[field_name+"__lte"] = filter_values.get("max_range")
-				if filter_type == "dropdown":
-					filter_dict[field_name+"__in"] = filter_values.get("dropdown_values")
-			#Apply User Filter
-			user_search_field = SearchField.objects.filter(is_user_filter=True, status=True, search_config=search_config)
-			if user_search_field:
-				filter_dict["user"] = request.user
-			filter_query_set = model.objects.select_related(*select_related_fields).filter(**filter_dict)
+			if data_type == "all":
+				filter_query_set = model.objects.filter(is_deleted=False, **query)
+			else:
+				#apply filters
+				filter_search_field_ids = filters.keys()
+				search_fields = SearchField.objects.filter(pk__in=filter_search_field_ids, status=True,
+														search_config=search_config)
+				for search_field in search_fields:
+					search_id_value_map[str(search_field.pk)] = search_field.serialize()
+				filter_dict = dict()
+				for key, value in search_id_value_map.iteritems():
+					filter_values = filters.get(key)
+					filter_type = value.get("filter_type")
+					field_name = value.get("field_name")
+					if filter_type == "daterange":
+						filter_dict[field_name+"__gte"] = filter_values.get("min_range")
+						filter_dict[field_name+"__lte"] = filter_values.get("max_range")
+					if filter_type == "dropdown":
+						filter_dict[field_name+"__in"] = filter_values.get("dropdown_values")
+					if filter_type == "date":
+						filter_dict[field_name] = filter_values.get("date")
+				#Apply User Filter
+				user_search_field = SearchField.objects.filter(is_user_filter=True, status=True, search_config=search_config)
+				if user_search_field:
+					filter_dict["user"] = request.user
+				filter_query_set = model.objects.select_related(*select_related_fields).filter(**filter_dict)
+
+			#paginated response.
+			if limit:
+				filter_query_set_ids = list(filter_query_set.values_list("pk", flat=True))
+				paginated_ids = filter_query_set_ids[int(offset):int(limit)]
+				filter_query_set = model.objects.select_related(*select_related_fields)\
+												.filter(pk__in=paginated_ids, is_deleted=False)
+
 			#apply sort
 			sort_search_fields_ids = sortable.keys()
 			search_fields =SearchField.objects.filter(pk__in=sort_search_fields_ids, 
@@ -105,6 +124,8 @@ class FilterView(View):
 				if sort_order == "DESC":
 					sort_field_list.append("-"+field_name)
 			filter_sorted_query_set = filter_query_set.order_by(*sort_field_list)
+
+			#Return serialized response.
 			filter_sorted_query_data = model.objects.bulk_serializer(filter_sorted_query_set)
 			self.response["res_str"] = "Data fetched successfully."
 			self.response["res_data"] = filter_sorted_query_data

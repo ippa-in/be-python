@@ -61,6 +61,34 @@ class BankAccountManager(models.Manager):
 		bank_acc = self.create(**bank_acc_details)
 		return bank_acc
 
+	def bulk_serializer(self, queryset):
+
+		bank_acc_data = []
+		for obj in queryset:
+			bank_acc_data.append(obj.serialize())
+		return bank_acc_data
+
+	def take_action(self,bank_acc_id, action, comments=""):
+
+		bank_acc = BankAccount.objects.get(pk=bank_acc_id)
+		if action == "APPROVED":
+			bank_acc.status = BankAccount.VERIFIED
+		elif action == "DECLINED":
+			bank_acc.status = BankAccount.DECLINED
+		bank_acc.comments = comments
+		bank_acc.save()
+		return bank_acc
+
+	def get_active_bank_details(self, user_id):
+
+		acc_details = dict()
+		try:
+			active_bank_acc = BankAccount.objects.get(user_id=user_id, is_deleted=0)
+			acc_details = active_bank_acc.serialize()
+		except BankAccount.DoesNotExist as ex:
+			pass
+		return acc_details
+
 class BankAccount(BaseModel):
 
 	PENDING = "Pending"
@@ -78,7 +106,7 @@ class BankAccount(BaseModel):
 	user = models.ForeignKey(IppaUser, related_name="user_bank_account")
 	bank = models.ForeignKey(Bank, null=True, blank=True, related_name="bank_account")
 	status = models.CharField(max_length=255, default=PENDING, choices=status_choices)
-
+	admin_comments = models.TextField(default='', null=True, blank=True)
 	objects = BankAccountManager()
 
 	def __unicode__(self):
@@ -92,7 +120,8 @@ class BankAccount(BaseModel):
 			"acc_number":self.acc_number,
 			"bank":self.bank.serialize(),
 			"ifsc_code":self.ifsc,
-			"status":self.status
+			"status":self.status,
+			"user_id":self.user.pk
 		}
 		return bank_acc_dict
 
@@ -111,7 +140,8 @@ class BankAccount(BaseModel):
 class TransactionManager(models.Manager):
 
 	def create_txn(self, txn_date=None, txn_type=None, status=None, 
-					amount=None, description=None, network=None, user=None):
+					amount=None, description=None, network=None, user=None,
+					is_bulk_creation=False):
 	
 		txn_id = generate_unique_id("TXN")
 		txn_details = {
@@ -131,7 +161,10 @@ class TransactionManager(models.Manager):
 			txn_details["txn_date"] = txn_date
 		else:
 			txn_details["txn_date"] = datetime.now()
-		txn_obj = self.create(**txn_details)
+		if is_bulk_creation:
+			txn_obj = Transaction(**txn_details)
+		else:
+			txn_obj = self.create(**txn_details)
 		return txn_obj
 
 	def bulk_serializer(self, queryset):
@@ -140,6 +173,17 @@ class TransactionManager(models.Manager):
 		for obj in queryset:
 			txn_data.append(obj.serialize())
 		return txn_data
+
+	def take_action(self, txn_id, action, comments=""):
+
+		txn = Transaction.objects.get(pk=txn_id)
+		if action == "APPROVED":
+			txn.status = Transaction.APPROVED
+		elif action == "DECLINED":
+			txn.status = Transaction.DECLINED
+		txn.comments = comments
+		txn.save()
+		return txn
 
 class Transaction(BaseModel):
 
@@ -165,6 +209,7 @@ class Transaction(BaseModel):
 	description = models.TextField(default='', null=True, blank=True)
 	user = models.ForeignKey(IppaUser, null=True, blank=True, related_name="user_txn")
 	network = models.ForeignKey(Network, null=True, blank=True, related_name="network_txn")
+	admin_comments = models.TextField(default='', null=True, blank=True)
 
 	objects = TransactionManager()
 
@@ -180,8 +225,23 @@ class Transaction(BaseModel):
 		txn_data["status"] = self.status
 		txn_data["amount"] = self.amount
 		txn_data["description"] = self.description
-		txn_data["user"] = {"player_id":self.user.player_id, "user_name":self.user.name} if self.user else {}
-		txn_data["network"] = {"network_id":self.network.network_id, "name":self.network.name} if self.network else {}
+		txn_data["admin_comments"] = self.admin_comments
+		txn_data["user"] = dict()
+		if self.user:
+			txn_data["user"] = {
+					"player_id":self.user.player_id, 
+					"user_name":self.user.name,
+					"email_id":self.user.email_id,
+					"mobile_number":self.user.mobile_number
+				}
+		txn_data["network"] = dict()
+		if self.network:
+			txn_data["network"] = {
+				"network_id":self.network.network_id, 
+				"name":self.network.name
+				}
+		bank_details = self.user.user_bank_account.get_active_bank_details(self.user_id)
+		txn_data["acc_number"] = bank_details.get("acc_number")
 		return txn_data
 
 

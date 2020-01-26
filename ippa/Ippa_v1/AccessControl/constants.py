@@ -29,3 +29,6 @@ KYC_DETAILS_APPROVED = "kyc_details_approved_notification"
 STR_ACTION_NOT_ALLOWED = "Unauthourised"
 EMAIL_VERIFICATION_NOTI = "email_verfication_notification"
 RESET_PASSWORD_NOTI = "reset_password_notification"
+
+NOTIFICATION_STRING_KYC = "{} has uploaded kyc documentations for verification."
+NOTIFICATION_STRING_SIGNUP = "{} has sign up. Please verify email."

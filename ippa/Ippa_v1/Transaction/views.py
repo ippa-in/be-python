@@ -15,6 +15,7 @@ from .utils import (send_take_action_on_txn_email_to_admin, send_txn_info_email_
 					bank_acc_action_taken_mail_to_user, txn_action_taken_mail_to_user)
 from .constants import *
 from .exceptions import BANK_ACC_NOT_EXIST, LESS_POINTS
+from NotificationEngine.models import NotificationMessage
 
 # Create your views here.
 class PointsTransactionView(View):
@@ -77,6 +78,8 @@ class PointsTransactionView(View):
 				txn_obj = Transaction.objects.create_txn(txn_type=Transaction.WITHDRAW,
 														amount=redeemable_points,
 														user=user)
+				#add notification string
+				NotificationMessage.objects.add_notification_str(NOTIFICATION_STR_TXN.format(user.name))
 				#Send mail to admin to take action.
 				send_take_action_on_txn_email_to_admin(ADMIN_TXN_ACTION_MAIL, txn_obj, user)
 
@@ -190,6 +193,8 @@ class BankAccountView(View):
 					raise ACCOUNT_ALREADY_EXISTS(ACCOUNT_EXISTS_STR)
 				bank = Bank.objects.get(bank_id=params.get("bank_id"))
 				bank_account = BankAccount.objects.create_bank_account(params, bank, user)
+				#add notification string
+				NotificationMessage.objects.add_notification_str(NOTIFICATION_STR_BANK_ACC.format(user.name))
 				#Send mail to admin to approve bank account.
 				send_bank_acc_add_mail_to_admin(ADMIN_BANK_ACC_ACTION_MAIL, bank_account, user)
 

@@ -23,5 +23,8 @@ urlpatterns = [
     url(r'^transaction/', include('Transaction.urls')),
     url(r'^network/', include('Network.urls')),
     url(r'^filter/', include('Filter.urls')),
+    url(r'^content/', include('Content.urls')),
+    url(r'^admin/', include('Admin.urls')),
+    url(r'^notification/', include('NotificationEngine.urls')),
 
 ]

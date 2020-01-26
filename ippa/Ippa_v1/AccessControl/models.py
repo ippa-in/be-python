@@ -66,6 +66,24 @@ class IppaUserManager(models.Manager):
 			ippa_user = IppaUser.objects.create(**user_data_set)
 		return ippa_user
 
+	def bulk_serializer(self, queryset):
+
+		user_data = []
+		for obj in queryset:
+			user_data.append(obj.serialize())
+		return user_data
+
+	def take_action(self,user_id, action, comments=""):
+
+		user = IppaUser.objects.get(pk=user_id)
+		if action == "APPROVED":
+			user.kyc_status = IppaUser.KYC_APPROVED
+		elif action == "DECLINED":
+			user.kyc_status = IppaUser.KYC_DECLINED
+		user.comments = comments
+		user.save()
+		return user
+
 class IppaUser(BaseModel):
 	"""
 		Users can be admin or players.
@@ -93,6 +111,8 @@ class IppaUser(BaseModel):
 	poa_image = models.TextField(null=True, blank=True, help_text="Proof of address.")
 	poi_status = models.CharField(max_length=255, default="", choices=KYC_STATUS)
 	poa_status = models.CharField(max_length=255, default="", choices=KYC_STATUS)
+	kyc_status = models.CharField(max_length=255, default="", choices=KYC_STATUS)
+	admin_comments = models.TextField(null=True, blank=True)
 	referral_code = models.CharField(max_length=255, null=True, blank=True)
 	city = models.CharField(max_length=255, null=True, blank=True)
 	country = models.CharField(max_length=255, default="India")
@@ -121,6 +141,12 @@ class IppaUser(BaseModel):
 		user_details["achievements"] = sorted(self.achievements, key=lambda achi: achi["order"])
 		user_details["profile_image"] = self.profile_image
 		user_details["is_email_verified"] = self.is_email_verified
+		user_details["kyc_status"] = self.kyc_status
+		user_details["poi_image"] = self.poi_image.split(",") if self.poi_image else ""
+		user_details["poa_image"] = self.poa_image.split(",") if self.poi_image else ""
+
+		bank_acc_details = self.user_bank_account.get_active_bank_details(self.player_id)
+		user_details["bank_acc_status"] = bank_acc_details.get("status") if bank_acc_details else "No Bank Account."
 		return user_details
 
 	def update_user_info(self, params_dict):
@@ -140,3 +166,4 @@ class IppaUser(BaseModel):
 					raise Exception(USER_NAME_ALREADY_EXIST)
 				self.user_name = value
 		self.save()
+

@@ -32,8 +32,11 @@ class SearchFieldManager(models.Manager):
 
 class SearchField(BaseModel):
 
-	filter_choices = (("daterange", "daterange"),
-						("dropdown", "dropdown"))
+	filter_choices = (
+						("daterange", "daterange"),
+						("dropdown", "dropdown"),
+						("date", "date")
+					)
 
 	search_config = models.ForeignKey(SearchConfiguration, null=True, blank=True)
 	display_name = models.CharField(max_length=255, null=True, blank=True)

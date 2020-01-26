@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+import pytz
 
 from django.db import models
+from datetime import datetime
 from django.template import Template, Context
 from django.core.mail import EmailMultiAlternatives
 
 from .constants import *
+from .utils import get_time_diff
 
 # Create your models here.
 
@@ -86,6 +88,32 @@ class Notification(BaseModel):
 
 	def __unicode__(self):
 		return self.notification_id + " " + self.notification_name
+
+class NotificationMessageManager(models.Manager):
+
+	def add_notification_str(self, notification_str):
+
+		NotificationMessage.objects.create(notification_str=notification_str)
+
+class NotificationMessage(BaseModel):
+
+	notification_str = models.CharField(max_length=255)
+	has_read = models.BooleanField(default=False)
+
+	objects = NotificationMessageManager()
+
+	def __unicode__(self):
+		return str(self.pk)
+
+	def serialize(self):
+
+		notification_dict = {
+			"notification_id":self.pk,
+			"notification_str":self.notification_str,
+			"time":get_time_diff(self.created_on)
+		}
+		return 	notification_dict
+
 
 
 

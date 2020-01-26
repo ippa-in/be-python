@@ -14,10 +14,11 @@ services:
       - 8082:8082
 
   redis:
-    image: redis:alpine
+    image: redis_ippa:alpine
     restart: always
     volumes:
       - data:/data
+      
 
 volumes:
   logs:

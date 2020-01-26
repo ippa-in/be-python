@@ -9,10 +9,12 @@ from AccessControl.utils import (authenticate_user, send_kyc_verified_email_to_u
 								send_email_verification_link, send_reset_password_link,
 								create_auth_token, validate_password, gen_password_hash)
 from AccessControl.constants import *
+from AccessControl.exceptions import *
 from Ippa_v1.responses import *
 from Ippa_v1.utils import (copy_content_to_s3, generate_unique_id)
-from Ippa_v1.decorators import decorator_4xx, email_decorator_4xx
+from Ippa_v1.decorators import decorator_4xx, email_decorator_4xx, decorator_4xx_admin
 from Ippa_v1.redis_utils import set_token, get_token
+from NotificationEngine.models import NotificationMessage
 
 class SignUp(View):
 	
@@ -47,6 +49,8 @@ class SignUp(View):
 			token = create_auth_token(user.player_id)
 			set_token(token, user.player_id)
 			send_email_verification_link(EMAIL_VERIFICATION_NOTI, token, user)
+			#add notification string.
+			NotificationMessage.objects.add_notification_str(NOTIFICATION_STRING_SIGNUP.format(user.name))
 			self.response["res_str"] = "Player registered successfully."
 			self.response["res_data"] = {"player_id":user.pk}
 			return send_201(self.response)
@@ -200,6 +204,7 @@ class UploadKYC(View):
 				player.poa_status = IppaUser.KYC_PENDING
 				player.poa_image = player.poa_image + poa_doc_b_s3_url
 			player.save()
+			NotificationMessage.objects.add_notification_str(NOTIFICATION_STRING_KYC.format(player.name))
 			self.response["res_data"] = s3_url_dict
 			self.response["res_str"] = "KYC documents added successfully."
 			return send_200(self.response)
@@ -232,6 +237,11 @@ class UploadKYC(View):
 						send_kyc_verified_email_to_user(KYC_DETAILS_APPROVED, 
 										"proof of address", action, user)
 				user.save()
+				#Update Kyc Status
+				if user.poi_status == IppaUser.KYC_APPROVED and user.poa_status == IppaUser.KYC_APPROVED:
+					user.kyc_status = IppaUser.KYC_APPROVED
+				elif user.poi_status == IppaUser.KYC_DECLINED and user.poa_status == IppaUser.KYC_DECLINED:
+					user.kyc_status = IppaUser.KYC_DECLINED
 			else:
 				raise ACTION_NOT_ALLOWED(STR_ACTION_NOT_ALLOWED)
 			self.response["res_str"] = "KYC documents verified successfully."
@@ -337,5 +347,4 @@ class UploadProfilePic(View):
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
-
 
