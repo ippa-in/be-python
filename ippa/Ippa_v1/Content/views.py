@@ -103,7 +103,7 @@ class UpdateDashboardImage(View):
 			image.update_dashboard_image(title=title, description=description, 
 												img_url=file_s3_url)
 			self.response["res_str"] = "Dashboard Image Updated Successfully."
-			self.response["res_data"] = {"img_id":image.pk}
+			self.response["res_data"] = image.serializer()
 			return send_200(self.response)
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
