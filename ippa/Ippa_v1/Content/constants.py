@@ -32,7 +32,7 @@ NAVIGATION_BAR = [
 					"offset":0,
 					"data_type":"all"
 				},
-				"sort_key":None,
+				"sort_key":[],
 				"tertiary_segment":None
 			}
 		],
@@ -49,7 +49,7 @@ NAVIGATION_BAR = [
 				"order":"1",
 				"is_default":True,
 				"filter_query":None,
-				"sort_key":None,
+				"sort_key":[],
 				"tertiary_segment":[
 					{
 						"name":"Pending",
@@ -64,7 +64,7 @@ NAVIGATION_BAR = [
 								"kyc_status":"Pending"
 							}
 						},
-						"sort_key":None
+						"sort_key":[]
 					},
 					{
 						"name":"Approved",
@@ -79,7 +79,7 @@ NAVIGATION_BAR = [
 								"kyc_status":"Approved"
 							}
 						},
-						"sort_key":None,
+						"sort_key":[],
 					},
 					{
 						"name":"Declined",
@@ -94,7 +94,7 @@ NAVIGATION_BAR = [
 								"kyc_status":"Declined"
 							}
 						},
-						"sort_key":None,
+						"sort_key":[],
 					}
 				]
 			},
@@ -104,7 +104,7 @@ NAVIGATION_BAR = [
 				"order":"2",
 				"is_default":False,
 				"filter_query":None,
-				"sort_key":None,
+				"sort_key":[],
 				"tertiary_segment":[
 					{
 						"name":"Pending",
@@ -120,7 +120,7 @@ NAVIGATION_BAR = [
 								"txn_type":"Withdraw"
 							}
 						},
-						"sort_key":None,
+						"sort_key":[],
 					},
 					{
 						"name":"Approved",
@@ -136,7 +136,7 @@ NAVIGATION_BAR = [
 								"txn_type":"Withdraw"
 							}
 						},
-						"sort_key":None,
+						"sort_key":[],
 					},
 					{
 						"name":"Declined",
@@ -152,7 +152,7 @@ NAVIGATION_BAR = [
 								"txn_type":"Withdraw"
 							}
 						},
-						"sort_key":None,
+						"sort_key":[],
 					}
 				]
 			},
@@ -162,7 +162,7 @@ NAVIGATION_BAR = [
 				"order":"3",
 				"is_default":False,
 				"filter_query":None,
-				"sort_key":None,
+				"sort_key":[],
 				"tertiary_segment":[
 					{
 						"name":"Pending",
@@ -177,7 +177,7 @@ NAVIGATION_BAR = [
 								"status":"Pending"
 							}
 						},
-						"sort_key":None,
+						"sort_key":[],
 					},
 					{
 						"name":"Approved",
@@ -192,7 +192,7 @@ NAVIGATION_BAR = [
 								"status":"Approved"
 							}
 						},
-						"sort_key":None,
+						"sort_key":[],
 					},
 					{
 						"name":"Declined",
@@ -207,7 +207,7 @@ NAVIGATION_BAR = [
 								"status":"Declined"
 							}
 						},
-						"sort_key":None,
+						"sort_key":[],
 					}
 				]
 			},
@@ -264,7 +264,7 @@ NAVIGATION_BAR = [
 					"offset":0,
 					"data_type":"all"
 				},
-				"sort_key":None,
+				"sort_key":[],
 				"tertiary_segment":None
 			}
 		],
@@ -285,7 +285,7 @@ NAVIGATION_BAR = [
 					"offset":0,
 					"data_type":"all"
 				},
-				"sort_key":None,
+				"sort_key":[],
 				"tertiary_segment":None
 			}
 		],
