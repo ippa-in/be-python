@@ -3,9 +3,9 @@ from Filter.models import SearchConfiguration
 from django.contrib.contenttypes.models import ContentType
 
 
-display_name = "transaction_content"
-app_label = "Transaction"
-model = "transaction"
+display_name = "points_content"
+app_label = "Content"
+model = "points"
 
 ct = ContentType.objects.get(app_label=app_label, model=model)
 sc = SearchConfiguration.objects.create(display_name=display_name, content_type=ct)
@@ -25,13 +25,14 @@ from Filter.models import SearchField
 
 #version 2
 search_field_detail = {
-	"search_config_id":11,
-	"display_name":"Date",
-	"field_name":"txn_date",
+	"search_config_id":13,
+	"display_name":"Image_sort",
+	"field_name":"order",
 	"status":True,
 	"is_user_filter":False,
-	"filter_type":"date",
-	"order":3
+	"filter_type":None,
+	"order":None,
+	"is_sortable":True
 }
 
 sf = SearchField.objects.create(**search_field_detail)
