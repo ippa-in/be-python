@@ -226,6 +226,7 @@ class Transaction(BaseModel):
 		txn_data["amount"] = self.amount
 		txn_data["description"] = self.description
 		txn_data["admin_comments"] = self.admin_comments
+		txn_data["date"] = self.created_on
 		txn_data["user"] = dict()
 		if self.user:
 			txn_data["user"] = {

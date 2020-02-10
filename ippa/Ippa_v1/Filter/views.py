@@ -8,6 +8,7 @@ from Ippa_v1.responses import *
 from .models import SearchConfiguration, SearchField
 from .utils import get_foreign_keys
 from Ippa_v1.decorators import decorator_4xx
+from Content.constants import CONTENT_COLUMN_MAPPING
 
 # Create your views here.
 class SearchFieldView(View):
@@ -23,8 +24,9 @@ class SearchFieldView(View):
 	def get(self, request, *args, **kwargs):
 
 		params = request.params_dict
+		content_name = params.get("display_name")
 		try:
-			search_config = SearchConfiguration.objects.get(display_name=params.get("display_name"))
+			search_config = SearchConfiguration.objects.get(display_name=content_name)
 			search_fields = SearchField.objects.filter(search_config=search_config, 
 														status=True).\
 														order_by('order')
@@ -39,7 +41,8 @@ class SearchFieldView(View):
 			self.response["res_str"] = "Filter config fetch successfully."
 			self.response["res_data"] = {
 				"filters":filter_field_data,	
-				"sort":sort_field_data
+				"sort":sort_field_data,
+				"colums":CONTENT_COLUMN_MAPPING.get(content_name, list())
 			}
 			return send_200(self.response)
 		except Exception as ex:

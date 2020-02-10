@@ -137,13 +137,15 @@ class IppaUser(BaseModel):
 		user_details["mobile_number"] = self.mobile_number
 		user_details["email_id"] = self.email_id
 		user_details["points"] = self.points
+		user_details["date"] = self.created_on
 		user_details["favourite_hands"] = self.favourite_hands
 		user_details["achievements"] = sorted(self.achievements, key=lambda achi: achi["order"])
 		user_details["profile_image"] = self.profile_image
 		user_details["is_email_verified"] = self.is_email_verified
 		user_details["kyc_status"] = self.kyc_status
-		user_details["poi_image"] = self.poi_image.split(",") if self.poi_image else ""
-		user_details["poa_image"] = self.poa_image.split(",") if self.poi_image else ""
+		user_details["poi_image"] = self.poi_image.split(",") if self.poi_image else list()
+		user_details["poa_image"] = self.poa_image.split(",") if self.poi_image else list()
+		user_details["kyc_images"] = user_details["poi_image"] + user_details["poa_image"]
 
 		bank_acc_details = self.user_bank_account.get_active_bank_details(self.player_id)
 		user_details["bank_acc_status"] = bank_acc_details.get("status") if bank_acc_details else "No Bank Account."
