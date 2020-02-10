@@ -200,10 +200,11 @@ class ManagePoints(View):
 				file_key = s3_url_list[-2] + "/" + s3_url_list[-1]
 
 				point_file = get_content_from_s3(file_key)
+				file_content = point_file.get("Body")
 				if ".xlsx" in title:
-					file_data = read_excel_file(point_file)
+					file_data = read_excel_file(file_content)
 				elif ".csv" in title:
-					file_data = read_csv_file(point_file)
+					file_data = read_csv_file(file_content)
 			else:
 				files = Points.objects.all().order_by('-created_on')
 				file_data = list()
