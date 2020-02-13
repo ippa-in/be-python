@@ -717,10 +717,48 @@ CONTENT_COLUMN_MAPPING = {
 			"order":5
 		},
 		{
-			"display_name":"Amount",
+			"display_name":"Points",
 			"lookup_key":"amount",
 			"key_type":"string",
 			"order":6
 		}
 	],
+	POINTS_SUB_SEGMENT:[
+		{
+			"display_name":"Date",
+			"lookup_key":"Date",
+			"key_type":"date",
+			"order":1
+		},
+		{
+			"display_name":"User name",
+			"lookup_key":"UserName",
+			"key_type":"string",
+			"order":2
+		},
+		{
+			"display_name":"Email",
+			"lookup_key":"email_id",
+			"key_type":"Email",
+			"order":3
+		},
+		{
+			"display_name":"Transaction type",
+			"lookup_key":"Transaction Type",
+			"key_type":"string",
+			"order":4
+		},
+		{
+			"display_name":"Network",
+			"lookup_key":"Network",
+			"key_type":"string",
+			"order":5
+		},
+		{
+			"display_name":"Points",
+			"lookup_key":"Amount",
+			"key_type":"string",
+			"order":6
+		}
+	]
 }
