@@ -11,6 +11,9 @@ ADMIN_BANK_ACC_ACTION_MAIL = 'admin_bank_acc_notificaion'
 USER_BANK_ACC_INFO_MAIL = 'user_bank_acc_notification'
 USER_BANK_ACC_ACTION_TAKEN_MAIL = 'user_bank_acc_action_taken'
 USER_TXN_ACTION_TAKEN_MAIL = 'user_txn_action_taken'
+WITHDRAWL_REQUEST_APPROVED = "withdrawal_request_approved"
+WITHDRAWL_REQUEST_DECLINED = "withdrawal_request_declined"
+POINT_UPDATED_NOTIFICATION = "points_updated_notification"
 
 NOTIFICATION_STR_BANK_ACC = "{} has added a bank account."
 NOTIFICATION_STR_TXN = "{} has withdraw amount."

@@ -31,6 +31,8 @@ def read_csv_file(file):
 
 	points_data = list()
 	#read from temp file.
+	with open('temp_file.txt', 'w') as f:
+		f.write(file.read())
 	with open('temp_file.txt') as f:
 		data_dict = csv.DictReader(f, delimiter=',')
 		for data in data_dict:

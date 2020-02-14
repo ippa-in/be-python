@@ -155,7 +155,6 @@ class ManagePoints(View):
 		user = request.user
 		points_file = request.FILES.get("file", "")
 		title = request.POST.get("title", "")
-		
 		try:
 			if ".xlsx" in title:
 				txn_data = read_excel_file(points_file)

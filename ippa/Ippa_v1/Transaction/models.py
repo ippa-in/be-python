@@ -175,12 +175,15 @@ class TransactionManager(models.Manager):
 		return txn_data
 
 	def take_action(self, txn_id, action, comments=""):
-
+		from Transaction.utils import (txn_approved_notification_to_user,
+										txn_declined_notification_to_user)
 		txn = Transaction.objects.get(pk=txn_id)
 		if action == "APPROVED":
 			txn.status = Transaction.APPROVED
+			txn_approved_notification_to_user(txn, txn.user)
 		elif action == "DECLINED":
 			txn.status = Transaction.DECLINED
+			txn_declined_notification_to_user(txn, txn.user, comments)
 		txn.comments = comments
 		txn.save()
 		return txn

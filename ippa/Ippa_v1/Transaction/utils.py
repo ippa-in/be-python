@@ -1,4 +1,7 @@
 from NotificationEngine.interface import initiate_notification
+from Ippa_v1.utils import convert_datetime_to_string
+from Transaction.constants import *
+
 
 def send_take_action_on_txn_email_to_admin(notification_key, txn_obj, user, to=[], cc=[]):
 
@@ -20,7 +23,9 @@ def send_txn_info_email_to_user(notification_key, txn_obj, user, to=[], cc=[]):
 
 	notification_obj = {
 		"identifier_dict":{
-			"txn_id":txn_obj.txn_id
+			"txn_id":txn_obj.txn_id,
+			"date":convert_datetime_to_string(txn_obj.txn_date,  "%d-%m-%Y"),
+			"time":convert_datetime_to_string(txn_obj.txn_date,  "%H:%M %p"),
 		},
 		"to":[user.email_id]
 	}
@@ -92,3 +97,50 @@ def txn_action_taken_mail_to_user(notification_key, action, txn_obj, user, to=[]
 		initiate_notification(notification_key, notification_obj)
 	except Exception as ex:
 		pass
+
+def txn_approved_notification_to_user(txn_obj, user, to=[], cc=[]):
+
+	notification_obj = {
+		"identifier_dict":{
+			"amount":txn_obj.amount,
+			"user_name":user.name
+		},
+		"to":[user.email_id]
+	}
+
+	try:
+		initiate_notification(WITHDRAWL_REQUEST_APPROVED, notification_obj)
+	except Exception as ex:
+		pass
+
+def txn_declined_notification_to_user(txn_obj, user, comments, to=[], cc=[]):
+
+	notification_obj = {
+		"identifier_dict":{
+			"amount":txn_obj.amount,
+			"user_name":user.name,
+			"comments":comments
+		},
+		"to":[user.email_id]
+	}
+
+	try:
+		initiate_notification(WITHDRAWL_REQUEST_DECLINED, notification_obj)
+	except Exception as ex:
+		pass
+def update_point_notification_to_user(month, user, to=[], cc=[]):
+	link = ""
+	notification_obj = {
+		"identifier_dict":{
+			"month":month,
+			"user_name":user.name,
+			"link":link
+		},
+		"to":[user.email_id]
+	}
+
+	try:
+		initiate_notification(POINT_UPDATED_NOTIFICATION, notification_obj)
+	except Exception as ex:
+		pass
+
