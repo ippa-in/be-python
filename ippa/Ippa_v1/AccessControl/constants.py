@@ -26,9 +26,11 @@ POINTS_DICT = {
 }
 
 KYC_DETAILS_APPROVED = "kyc_details_approved_notification"
+KYC_DETAILS_DECLINED = "kyc_details_declined_notification"
 STR_ACTION_NOT_ALLOWED = "Unauthourised"
 EMAIL_VERIFICATION_NOTI = "email_verfication_notification"
 RESET_PASSWORD_NOTI = "reset_password_notification"
+KYC_UPLOAD_NOTI = "kyc_upload_notification"
 
 NOTIFICATION_STRING_KYC = "{} has uploaded kyc documentations for verification."
 NOTIFICATION_STRING_SIGNUP = "{} has sign up. Please verify email."

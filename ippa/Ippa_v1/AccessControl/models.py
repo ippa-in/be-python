@@ -74,12 +74,16 @@ class IppaUserManager(models.Manager):
 		return user_data
 
 	def take_action(self,user_id, action, comments=""):
+		from AccessControl.utils import (send_kyc_approved_email_to_user, 
+										send_kyc_declined_email_to_user)
 
 		user = IppaUser.objects.get(pk=user_id)
 		if action == "APPROVED":
 			user.kyc_status = IppaUser.KYC_APPROVED
+			send_kyc_approved_email_to_user(user)
 		elif action == "DECLINED":
 			user.kyc_status = IppaUser.KYC_DECLINED
+			send_kyc_declined_email_to_user(user, comments)
 		user.comments = comments
 		user.save()
 		return user

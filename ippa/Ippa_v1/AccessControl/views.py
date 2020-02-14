@@ -5,9 +5,9 @@ from django.views.generic import View
 from django.http import QueryDict
 
 from AccessControl.models import *
-from AccessControl.utils import (authenticate_user, send_kyc_verified_email_to_user,
+from AccessControl.utils import (authenticate_user, gen_password_hash, validate_password,
 								send_email_verification_link, send_reset_password_link,
-								create_auth_token, validate_password, gen_password_hash)
+								create_auth_token)
 from AccessControl.constants import *
 from AccessControl.exceptions import *
 from Ippa_v1.responses import *
@@ -205,6 +205,7 @@ class UploadKYC(View):
 				player.poa_image = player.poa_image + poa_doc_b_s3_url
 			player.save()
 			NotificationMessage.objects.add_notification_str(NOTIFICATION_STRING_KYC.format(player.name))
+			send_kyc_document_upload_link(user)
 			self.response["res_data"] = s3_url_dict
 			self.response["res_str"] = "KYC documents added successfully."
 			return send_200(self.response)
@@ -227,21 +228,19 @@ class UploadKYC(View):
 							user.poi_status = IppaUser.KYC_APPROVED
 						elif action.get("action_type") == "declined":
 							user.poi_status = IppaUser.KYC_DECLINED
-						send_kyc_verified_email_to_user(KYC_DETAILS_APPROVED, 
-										"proof of identity", action, user)
 					elif action.get("doc_type") == "poa":
 						if action.get("action_type") == "approved":
 							user.poa_status = IppaUser.KYC_APPROVED
 						elif action.get("action_type") == "declined":
 							user.poa_status = IppaUser.KYC_DECLINED
-						send_kyc_verified_email_to_user(KYC_DETAILS_APPROVED, 
-										"proof of address", action, user)
 				user.save()
 				#Update Kyc Status
 				if user.poi_status == IppaUser.KYC_APPROVED and user.poa_status == IppaUser.KYC_APPROVED:
 					user.kyc_status = IppaUser.KYC_APPROVED
+					send_kyc_approved_email_to_user(user)
 				elif user.poi_status == IppaUser.KYC_DECLINED and user.poa_status == IppaUser.KYC_DECLINED:
 					user.kyc_status = IppaUser.KYC_DECLINED
+					send_kyc_declined_email_to_user(user)
 			else:
 				raise ACTION_NOT_ALLOWED(STR_ACTION_NOT_ALLOWED)
 			self.response["res_str"] = "KYC documents verified successfully."

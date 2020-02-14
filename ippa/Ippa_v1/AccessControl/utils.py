@@ -64,20 +64,34 @@ def authenticate_user(email_id, password):
 		res_str = LOGIN_SUCCESSFUL
 	return code, res_str, response
 
-def send_kyc_verified_email_to_user(notification_key, doc_type, action, user, to=[], cc=[]):
+def send_kyc_approved_email_to_user(user, to=[], cc=[]):
 	from NotificationEngine.interface import initiate_notification
 
 	notification_obj = {
 		"identifier_dict":{
-			"user_name":user.name,
-			"action":action,
-			"doc_type":doc_type
+			"user_name":user.name
 		},
 		"to":[user.email_id]
 	}
 
 	try:
-		initiate_notification(notification_key, notification_obj)
+		initiate_notification(KYC_DETAILS_APPROVED, notification_obj)
+	except Exception as ex:
+		pass
+
+def send_kyc_declined_email_to_user(user, comments, to=[], cc=[]):
+	from NotificationEngine.interface import initiate_notification
+
+	notification_obj = {
+		"identifier_dict":{
+			"user_name":user.name,
+			"comments":comments
+		},
+		"to":[user.email_id]
+	}
+
+	try:
+		initiate_notification(KYC_DETAILS_DECLINED, notification_obj)
 	except Exception as ex:
 		pass
 
@@ -95,6 +109,21 @@ def send_email_verification_link(notification_key, token, user, to=[], cc=[]):
 
 	try:
 		initiate_notification(notification_key, notification_obj)
+	except Exception as ex:
+		pass
+
+def send_kyc_document_upload_link(user, to=[], cc=[]):
+	from NotificationEngine.interface import initiate_notification
+
+	notification_obj = {
+		"identifier_dict":{
+			"user_name":user.name
+		},
+		"to":[user.email_id]
+	}
+
+	try:
+		initiate_notification(KYC_UPLOAD_NOTI, notification_obj)
 	except Exception as ex:
 		pass
 

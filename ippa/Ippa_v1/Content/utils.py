@@ -18,6 +18,7 @@ def read_excel_file(file):
 	#read from temp file.
 	data_frame = pd.read_excel('temp_file.xlsx')
 	data_dict = data_frame.to_dict('records')
+	os.remove('temp_file.xlsx')
 	return data_dict
 
 def read_csv_file(file):
@@ -37,6 +38,7 @@ def read_csv_file(file):
 		data_dict = csv.DictReader(f, delimiter=',')
 		for data in data_dict:
 			points_data.append(data)
+	os.remove('temp_file.txt')
 	return points_data
 
 
