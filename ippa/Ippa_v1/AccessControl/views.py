@@ -7,7 +7,7 @@ from django.http import QueryDict
 from AccessControl.models import *
 from AccessControl.utils import (authenticate_user, gen_password_hash, validate_password,
 								send_email_verification_link, send_reset_password_link,
-								create_auth_token)
+								create_auth_token, send_kyc_document_upload_link)
 from AccessControl.constants import *
 from AccessControl.exceptions import *
 from Ippa_v1.responses import *
@@ -192,7 +192,7 @@ class UploadKYC(View):
 				s3_url_dict["poi_doc_b_s3_url"] = poi_doc_b_s3_url
 				player.poi_status = IppaUser.KYC_PENDING
 				player.kyc_status = IppaUser.KYC_PENDING
-				player.poi_image = player.poi_image + poi_doc_b_s3_url
+				player.poi_image = player.poi_image + "," + poi_doc_b_s3_url
 			if poa_doc_f:
 				file_name = generate_unique_id("FRONT")
 				poa_doc_f_s3_url = copy_content_to_s3(poa_doc_f, "KYC/"+file_name)
@@ -206,10 +206,10 @@ class UploadKYC(View):
 				s3_url_dict["poa_doc_b_s3_url"] = poa_doc_b_s3_url
 				player.poa_status = IppaUser.KYC_PENDING
 				player.kyc_status = IppaUser.KYC_PENDING
-				player.poa_image = player.poa_image + poa_doc_b_s3_url
+				player.poa_image = player.poa_image + "," + poa_doc_b_s3_url
 			player.save()
 			NotificationMessage.objects.add_notification_str(NOTIFICATION_STRING_KYC.format(player.name))
-			send_kyc_document_upload_link(user)
+			send_kyc_document_upload_link(player)
 			self.response["res_data"] = s3_url_dict
 			self.response["res_str"] = "KYC documents added successfully."
 			return send_200(self.response)

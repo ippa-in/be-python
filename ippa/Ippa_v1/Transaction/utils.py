@@ -26,6 +26,7 @@ def send_txn_info_email_to_user(notification_key, txn_obj, user, to=[], cc=[]):
 			"txn_id":txn_obj.txn_id,
 			"date":convert_datetime_to_string(txn_obj.txn_date,  "%d-%m-%Y"),
 			"time":convert_datetime_to_string(txn_obj.txn_date,  "%H:%M %p"),
+			"amount":txn_obj.amount
 		},
 		"to":[user.email_id]
 	}

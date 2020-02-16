@@ -30,13 +30,13 @@ def bulk_txn_create(txn_data):
 					err_msg = USER_NOT_TAGGED_STR.format(network_user_name, network_name)
 					raise UserNotTagged(err_msg)
 
-				taggeg_user = network_tagging_obj.user
+				tagged_user = network_tagging_obj.user
 				txn_date = datetime.strptime(txn.get("Date"), "%d-%m-%Y")
 				txn_detail = {
 					"txn_date":txn_date,
 					"txn_type":Transaction.DEPOSIT,
 					"amount":txn.get("Amount"),
-					"user":taggeg_user,
+					"user":tagged_user,
 					"network":network_tagging_obj.network,
 					"is_bulk_creation":True
 				}
@@ -44,14 +44,14 @@ def bulk_txn_create(txn_data):
 				txn_obj_list.append(txn_obj)
 				txn_count = txn_count + 1
 				#update user points
-				user_points = taggeg_user.points
+				user_points = tagged_user.points
 				user_points["redeemable_points"] += int(txn.get("Amount"))
-				taggeg_user.points = user_points
-				taggeg_user.save()
+				tagged_user.points = user_points
+				tagged_user.save()
 
 				#initiate points notification
 				month = txn_date.strftime("%B")
-				update_point_notification_to_user(month, taggeg_user)
+				update_point_notification_to_user(month, tagged_user)
 			Transaction.objects.bulk_create(txn_obj_list)
 		return True, txn_count, ""
 	except Exception as ex:

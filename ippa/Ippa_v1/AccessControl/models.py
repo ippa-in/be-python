@@ -166,10 +166,10 @@ class IppaUser(BaseModel):
 				self.mobile_number = value
 			if key == "favourite_hands" and value:
 				self.favourite_hands.append(value)
-			if key == "user_name" and value:
-				username = IppaUser.objects.filter(user_name=value)
-				if username.exists():
-					raise Exception(USER_NAME_ALREADY_EXIST)
-				self.user_name = value
+			# if key == "user_name" and value:
+			# 	username = IppaUser.objects.filter(user_name=value)
+			# 	if username.exists():
+			# 		raise Exception(USER_NAME_ALREADY_EXIST)
+			# 	self.user_name = value
 		self.save()
 
