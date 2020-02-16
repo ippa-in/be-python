@@ -184,24 +184,28 @@ class UploadKYC(View):
 				poi_doc_f_s3_url = copy_content_to_s3(poi_doc_f, "KYC/"+file_name)
 				s3_url_dict["poi_doc_f_s3_url"] = poi_doc_f_s3_url
 				player.poi_status = IppaUser.KYC_PENDING
+				player.kyc_status = IppaUser.KYC_PENDING
 				player.poi_image = poi_doc_f_s3_url
 			if poi_doc_b:
 				file_name = generate_unique_id("BACK")
 				poi_doc_b_s3_url = copy_content_to_s3(poi_doc_b, "KYC/"+file_name)
 				s3_url_dict["poi_doc_b_s3_url"] = poi_doc_b_s3_url
 				player.poi_status = IppaUser.KYC_PENDING
+				player.kyc_status = IppaUser.KYC_PENDING
 				player.poi_image = player.poi_image + poi_doc_b_s3_url
 			if poa_doc_f:
 				file_name = generate_unique_id("FRONT")
 				poa_doc_f_s3_url = copy_content_to_s3(poa_doc_f, "KYC/"+file_name)
 				s3_url_dict["poa_doc_f_s3_url"] = poa_doc_f_s3_url
 				player.poa_status = IppaUser.KYC_PENDING
+				player.kyc_status = IppaUser.KYC_PENDING
 				player.poa_image = poa_doc_f_s3_url
 			if poa_doc_b:
 				file_name = generate_unique_id("BACK")
 				poa_doc_b_s3_url = copy_content_to_s3(poa_doc_b, "KYC/"+file_name)
 				s3_url_dict["poa_doc_b_s3_url"] = poa_doc_b_s3_url
 				player.poa_status = IppaUser.KYC_PENDING
+				player.kyc_status = IppaUser.KYC_PENDING
 				player.poa_image = player.poa_image + poa_doc_b_s3_url
 			player.save()
 			NotificationMessage.objects.add_notification_str(NOTIFICATION_STRING_KYC.format(player.name))
