@@ -99,7 +99,7 @@ NAVIGATION_BAR = [
 				]
 			},
 			{
-				"name":"Withdrawls",
+				"name":"Withdrawals",
 				"content_type":None,
 				"order":"2",
 				"is_default":False,
