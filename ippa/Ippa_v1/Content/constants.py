@@ -315,7 +315,7 @@ CONTENT_COLUMN_MAPPING = {
 		{
 			"display_name":"Status",
 			"lookup_key":"kyc_status",
-			"key_type":"string",
+			"key_type":"status",
 			"order":3
 		},
 		{
@@ -335,6 +335,12 @@ CONTENT_COLUMN_MAPPING = {
 			"lookup_key":"kyc_images",
 			"key_type":"list",
 			"order":6
+		},
+		{
+			"display_name":"",
+			"lookup_key":"player_id",
+			"key_type":"action",
+			"order":7
 		}
 	],
 	APPROVED_KYC_SEGMENT:[
@@ -353,7 +359,7 @@ CONTENT_COLUMN_MAPPING = {
 		{
 			"display_name":"Status",
 			"lookup_key":"kyc_status",
-			"key_type":"string",
+			"key_type":"status",
 			"order":3
 		},
 		{
@@ -373,6 +379,12 @@ CONTENT_COLUMN_MAPPING = {
 			"lookup_key":"kyc_images",
 			"key_type":"list",
 			"order":6
+		},
+		{
+			"display_name":"",
+			"lookup_key":"player_id",
+			"key_type":"action",
+			"order":7
 		}
 	],
 	DECLINED_KYC_SEGMENT:[
@@ -391,7 +403,7 @@ CONTENT_COLUMN_MAPPING = {
 		{
 			"display_name":"Status",
 			"lookup_key":"kyc_status",
-			"key_type":"string",
+			"key_type":"status",
 			"order":3
 		},
 		{
@@ -411,6 +423,12 @@ CONTENT_COLUMN_MAPPING = {
 			"lookup_key":"kyc_images",
 			"key_type":"list",
 			"order":6
+		},
+		{
+			"display_name":"",
+			"lookup_key":"player_id",
+			"key_type":"action",
+			"order":7
 		}
 	],
 	PENDING_WITHDRAWL_SEGMENT:[
@@ -429,7 +447,7 @@ CONTENT_COLUMN_MAPPING = {
 		{
 			"display_name":"Status",
 			"lookup_key":"kyc_status",
-			"key_type":"string",
+			"key_type":"status",
 			"order":3
 		},
 		{
@@ -449,6 +467,12 @@ CONTENT_COLUMN_MAPPING = {
 			"lookup_key":"acc_number",
 			"key_type":"link",
 			"order":6
+		},
+		{
+			"display_name":"",
+			"lookup_key":"txn_id",
+			"key_type":"action",
+			"order":7
 		}
 	],
 	APPROVED_WITHDRAWL_SEGMENT:[
@@ -467,7 +491,7 @@ CONTENT_COLUMN_MAPPING = {
 		{
 			"display_name":"Status",
 			"lookup_key":"kyc_status",
-			"key_type":"string",
+			"key_type":"status",
 			"order":3
 		},
 		{
@@ -487,6 +511,12 @@ CONTENT_COLUMN_MAPPING = {
 			"lookup_key":"acc_number",
 			"key_type":"link",
 			"order":6
+		},
+		{
+			"display_name":"",
+			"lookup_key":"txn_id",
+			"key_type":"action",
+			"order":7
 		}
 	],
 	DECLINED_WITHDRAWL_SEGMENT:[
@@ -505,7 +535,7 @@ CONTENT_COLUMN_MAPPING = {
 		{
 			"display_name":"Status",
 			"lookup_key":"kyc_status",
-			"key_type":"string",
+			"key_type":"status",
 			"order":3
 		},
 		{
@@ -525,6 +555,12 @@ CONTENT_COLUMN_MAPPING = {
 			"lookup_key":"acc_number",
 			"key_type":"link",
 			"order":6
+		},
+		{
+			"display_name":"",
+			"lookup_key":"txn_id",
+			"key_type":"action",
+			"order":7
 		}
 	],
 	PENDING_BANK_ACC_INFO_SEGMENT:[
@@ -543,7 +579,7 @@ CONTENT_COLUMN_MAPPING = {
 		{
 			"display_name":"Status",
 			"lookup_key":"kyc_status",
-			"key_type":"string",
+			"key_type":"status",
 			"order":3
 		},
 		{
@@ -563,6 +599,12 @@ CONTENT_COLUMN_MAPPING = {
 			"lookup_key":"acc_number",
 			"key_type":"link",
 			"order":6
+		},
+		{
+			"display_name":"",
+			"lookup_key":"acc_id",
+			"key_type":"action",
+			"order":7
 		}
 	],
 	APPROVED_BANK_ACC_INFO_SEGMENT:[
@@ -581,7 +623,7 @@ CONTENT_COLUMN_MAPPING = {
 		{
 			"display_name":"Status",
 			"lookup_key":"kyc_status",
-			"key_type":"string",
+			"key_type":"status",
 			"order":3
 		},
 		{
@@ -601,6 +643,12 @@ CONTENT_COLUMN_MAPPING = {
 			"lookup_key":"acc_number",
 			"key_type":"link",
 			"order":6
+		},
+		{
+			"display_name":"",
+			"lookup_key":"acc_id",
+			"key_type":"action",
+			"order":7
 		}
 	],
 	DECLINED_BANK_ACC_INFO_SEGMENT:[
@@ -619,7 +667,7 @@ CONTENT_COLUMN_MAPPING = {
 		{
 			"display_name":"Status",
 			"lookup_key":"kyc_status",
-			"key_type":"string",
+			"key_type":"status",
 			"order":3
 		},
 		{
@@ -639,6 +687,12 @@ CONTENT_COLUMN_MAPPING = {
 			"lookup_key":"acc_number",
 			"key_type":"link",
 			"order":6
+		},
+		{
+			"display_name":"",
+			"lookup_key":"acc_id",
+			"key_type":"action",
+			"order":7
 		}
 	],
 	USER_SEGMENT:[
