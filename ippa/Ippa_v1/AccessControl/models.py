@@ -131,7 +131,6 @@ class IppaUser(BaseModel):
 		return str(self.player_id) + " " + str(self.name)
 
 	def serialize(self):
-
 		user_details = dict()
 		user_details["player_id"] = self.player_id
 		user_details["email_id"] = self.email_id
@@ -148,7 +147,7 @@ class IppaUser(BaseModel):
 		user_details["is_email_verified"] = self.is_email_verified
 		user_details["kyc_status"] = self.kyc_status
 		user_details["poi_image"] = self.poi_image.split(",") if self.poi_image else list()
-		user_details["poa_image"] = self.poa_image.split(",") if self.poi_image else list()
+		user_details["poa_image"] = self.poa_image.split(",") if self.poa_image else list()
 		user_details["kyc_images"] = user_details["poi_image"] + user_details["poa_image"]
 
 		bank_acc_details = self.user_bank_account.get_active_bank_details(self.player_id)
