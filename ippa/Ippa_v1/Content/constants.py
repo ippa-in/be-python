@@ -16,6 +16,7 @@ POINTS_SUB_SEGMENT = "points_content"
 IMAGES_SUB_SEGMENT = "images_content"
 USER_SEGMENT = "user_content"
 TRANSACTION_SEGMENT = "transaction_content"
+REWARD_SEGMENT = "reward_content"
 
 #NAVIGATION BAR STRUCTURE
 NAVIGATION_BAR = [
@@ -292,7 +293,28 @@ NAVIGATION_BAR = [
 		"order":"5",
 		"is_default":False
 
-	}
+	},
+	{
+		"segment":"Reward Uploads",
+		"sub_segment":[
+			{
+				"name":None,
+				"content_type":REWARD_SEGMENT,
+				"order":"1",
+				"is_default":True,
+				"filter_query":{
+					"limit":50,
+					"offset":0,
+					"data_type":"all"
+				},
+				"sort_key":[],
+				"tertiary_segment":None
+			}
+		],
+		"order":"6",
+		"is_default":False
+
+	},
 
 ]
 
@@ -814,5 +836,44 @@ CONTENT_COLUMN_MAPPING = {
 			"key_type":"string",
 			"order":6
 		}
-	]
+	],
+	REWARD_SEGMENT:[
+		{
+			"display_name":"From Date",
+			"lookup_key":"from_date",
+			"key_type":"date",
+			"order":1
+		},
+		{
+			"display_name":"To Date",
+			"lookup_key":"to_date",
+			"key_type":"date",
+			"order":2
+		},
+		{
+			"display_name":"Title",
+			"lookup_key":"title",
+			"key_type":"string",
+			"order":3
+		},
+		{
+			"display_name":"Network",
+			"lookup_key":"network_name",
+			"key_type":"string",
+			"order":4
+		},
+		{
+			"display_name":"Name of Points",
+			"lookup_key":"points_name",
+			"key_type":"string",
+			"order":5
+		},
+		{
+			"display_name":"Goal Points",
+			"lookup_key":"goal_points",
+			"key_type":"string",
+			"order":6
+		},
+
+	],
 }

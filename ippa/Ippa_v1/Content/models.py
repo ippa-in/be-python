@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 from django.db import models
 
 from Ippa_v1.utils import *
+from Network.models import Network
+
 # Create your models here.
 class BaseModel(models.Model):
 
@@ -108,5 +110,60 @@ class Points(BaseModel):
 		file_data["status"] = self.status
 		file_data["created_on"] = convert_datetime_to_string(self.created_on, "%d %b %Y %I:%M %p")
 		return file_data
+
+class RewardsManager(models.Manager):
+
+	def bulk_serializer(self, queryset):
+
+		rewards_data = []
+		for obj in queryset:
+			rewards_data.append(obj.serialize())
+		return rewards_data
+
+class Rewards(BaseModel):
+
+	PENDING = "Pending"
+	ACTIVE = "Active"
+	DEACTIVE = "Deactive"
+	EXPIRED = "Expired"
+	status_choices = ((PENDING, "Pending"),
+					(ACTIVE, "Active"),
+					(DEACTIVE, "Deactive"),
+					(EXPIRED, "Expired"))
+
+	title = models.CharField(max_length=255, blank=True, null=True)
+	description = models.TextField(null=True, blank=True)
+	from_date = models.DateTimeField()
+	to_date = models.DateTimeField()
+	deactivate_date = models.DateTimeField()
+	network = models.ForeignKey(Network, null=True, blank=True, related_name="network_reward")
+	point_name = models.TextField(null=True, blank=True)
+	goal_points = models.CharField(max_length=255, blank=True, null=True)
+	more_info_link = models.TextField(null=True, blank=True)
+	status = models.CharField(max_length=255, default=ACTIVE, choices=status_choices)
+
+	objects = RewardsManager()
+
+	def __unicode__(self):
+		return str(self.title)
+
+	def serialize(self):
+
+		reward_data = dict()
+		reward_data["reward_id"] = self.pk
+		reward_data["title"] = self.title
+		reward_data["description"] = self.description
+		reward_data["from_date"] = self.from_date
+		reward_data["to_date"] = self.to_date
+		reward_data["status"] = self.status
+		reward_data["network_name"] = {"id": self.network.pk, "image_url":self.network.image_url}
+		reward_data["point_name"] = self.point_name
+		reward_data["goal_points"] = self.goal_points
+		reward_data["more_info_link"] = self.more_info_link
+		return reward_data
+
+
+
+
 
 

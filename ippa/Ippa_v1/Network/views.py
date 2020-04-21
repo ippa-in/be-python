@@ -6,7 +6,7 @@ from django.views.generic import View
 from django.db.models import Q
 
 from Network.models import Network, PlayerTag
-from Ippa_v1.decorators import decorator_4xx
+from Ippa_v1.decorators import decorator_4xx, decorator_4xx_admin
 from .exceptions import USERNAME_ALREADY_TAKEN
 from .constants import USER_NAME_ALREADY_EXISTS
 from Ippa_v1.responses import *
@@ -36,7 +36,7 @@ class ManageNetwork(View):
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
-	@decorator_4xx([])
+	@decorator_4xx_admin([])
 	def post(self, request, *args, **kwargs):
 		"""
 		Adding a network.

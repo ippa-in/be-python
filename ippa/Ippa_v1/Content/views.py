@@ -7,6 +7,8 @@ from django.views.generic import View
 from Ippa_v1.decorators import decorator_4xx, decorator_4xx_admin
 from Ippa_v1.responses import *
 from Ippa_v1.utils import generate_unique_id, copy_content_to_s3, get_content_from_s3
+from Ippa_v1.redis_utils import is_token_exists
+from AccessControl.models import IppaUser
 from AccessControl.constants import STR_ACTION_NOT_ALLOWED
 from AccessControl.exceptions import ACTION_NOT_ALLOWED
 from Content.models import *
@@ -234,3 +236,200 @@ class GetNavigationBar(View):
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
+
+
+class PreviewRewards(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx_admin([])
+	def post(self, request, *args, **kwargs):
+
+		user = request.user
+		rewards_file = request.FILES.get("file", "")
+		title = request.POST.get("title", "")
+		
+		try:
+			data_dict = dict()
+			data_dict["title"] = title
+			if ".xlsx" in title:
+				data_dict["data"] = read_excel_file(rewards_file)
+			elif ".csv" in title:
+				data_dict["data"] = read_csv_file(rewards_file)
+			self.response["res_str"] = "Rewards fetched successfully."
+			self.response["res_data"] = data_dict
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class ManageRewards(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx_admin([])
+	def post(self, request, *args, **kwargs):
+
+		"""
+		ToDo: Create Rewards
+		"""
+		user = request.user
+		rewards_file = request.FILES.get("file", "")
+		title = request.POST.get("title", "")
+		try:
+			if ".xlsx" in title:
+				reward_data = read_excel_file(rewards_file)
+			elif ".csv" in title:
+				reward_data = read_csv_file(rewards_file)
+
+			reward_obj_list = list()
+			for reward in reward_data:
+
+				network = Network.objects.get(name=reward.get("network_name"))
+				reward_detail = {
+					"title":reward.get("title", ""),
+					"description":reward.get("description", ""),
+					"from_date":datetime.strptime(reward.get("from_date", ""), "%d-%m-%Y"),
+					"to_date":datetime.strptime(reward.get("to_date", ""), "%d-%m-%Y"),
+					"deactivate_date":datetime.strptime(reward.get("deactivate_date", ""), "%d-%m-%Y"),
+					"status":Rewards.ACTIVE,
+					"network":network,
+					"point_name":reward.get("point_name", ""),
+					"goal_points":reward.get("goal_points", ""),
+					"more_info_link":reward.get("more_info_link", ""),
+				}
+				reward_obj = Rewards(**reward_detail)
+				reward_obj_list.append(reward_obj)
+			Rewards.objects.bulk_create(reward_obj_list)
+
+			self.response["res_str"] = "Rewards added Successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+	@decorator_4xx_admin([])
+	def get(self, request, *args, **kwargs):
+
+		"""
+		return details of reward.
+		"""
+
+		data = request.params_dict
+		try:
+			reward_id = data.get("reward_id", "")
+			reward_obj = Rewards.objects.get(pk=reward_id)
+			self.response["res_str"] = "Rewards details fetch successfully."
+			self.response["res_data"] = reward_obj.serialize()
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class GetRewards(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	def get(self, request, *args, **kwargs):
+
+		"""
+		return details of reward group as filter wise.
+		"""
+
+		data = request.GET
+		network_id = data.get("network_id")
+		try:
+			rewards = Rewards.objects.filter(
+						status__in=[Rewards.ACTIVE, Rewards.EXPIRED], 
+						network__network_id=network_id)
+			reward_details =  Rewards.objects.bulk_serializer(rewards)
+			self.response["res_str"] = "Rewards details fetch successfully."
+			self.response["res_data"] = reward_details
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class GetRewardsNetworks(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	def get(self, request, *args, **kwargs):
+
+		"""
+		return details of reward network
+		"""
+		is_logged_in = False
+		user_points = dict()
+		reward_data = dict()
+		login_token = request.META.get("HTTP_PLAYER_TOKEN")
+		if login_token and is_token_exists(login_token):
+			is_logged_in = True
+			player_id = request.META.get("HTTP_PLAYER_ID")
+			user = IppaUser.objects.get(player_id=player_id)
+			user_points = user.points
+
+		reward_data["is_logged_in"] = is_logged_in
+		reward_data["user_points"] = user_points
+		reward_data["reward_networks"] = list()
+		try:
+			reward_networks = Rewards.objects.filter(
+						status__in=[Rewards.ACTIVE, Rewards.EXPIRED])\
+						.values_list('network__network_id', flat=True)
+			network_list = list(set(reward_networks))
+
+			network_objs = Network.objects.filter(network_id__in=reward_networks)
+			order_no = 2
+			for network in network_objs:
+				network_detail = network.serialize()
+				if network_detail.get("name") == "IPPA":
+					network_detail["order"] = 1
+				else:
+					network_detail["order"] = order_no
+					order_no = order_no + 1
+				reward_data["reward_networks"].append(network_detail)
+
+			self.response["res_str"] = "Rewards Networks details fetch successfully."
+			self.response["res_data"] = reward_data
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class RedeemReward(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	def post(self, request, *args, **kwargs):
+
+		"""
+		Deduct point and redeem reward.
+		"""
+		try:
+			self.response["res_str"] = "Reward redeemed  Successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+
