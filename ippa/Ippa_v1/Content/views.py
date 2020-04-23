@@ -347,7 +347,6 @@ class GetRewards(View):
 		"""
 		return details of reward group as filter wise.
 		"""
-
 		data = request.GET
 		network_id = data.get("network_id")
 		try:
@@ -375,6 +374,7 @@ class GetRewardsNetworks(View):
 		"""
 		return details of reward network
 		"""
+
 		is_logged_in = False
 		user_points = dict()
 		reward_data = dict()

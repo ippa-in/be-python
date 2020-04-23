@@ -141,7 +141,8 @@ class Rewards(BaseModel):
 	goal_points = models.CharField(max_length=255, blank=True, null=True)
 	more_info_link = models.TextField(null=True, blank=True)
 	status = models.CharField(max_length=255, default=ACTIVE, choices=status_choices)
-
+	is_redeemed = models.BooleanField(default=False)
+	is_active = models.BooleanField(default=True)
 	objects = RewardsManager()
 
 	def __unicode__(self):
@@ -160,10 +161,8 @@ class Rewards(BaseModel):
 		reward_data["point_name"] = self.point_name
 		reward_data["goal_points"] = self.goal_points
 		reward_data["more_info_link"] = self.more_info_link
+		reward_data["is_redeemed"] = self.is_redeemed
+		reward_data["is_active"] = self.is_active
 		return reward_data
-
-
-
-
 
 
