@@ -103,6 +103,7 @@ class FilterView(View):
 				user_search_field = SearchField.objects.filter(is_user_filter=True, status=True, search_config=search_config)
 				if user_search_field:
 					filter_dict["user"] = request.user
+				filter_dict["is_deleted"] = False
 				filter_query_set = model.objects.select_related(*select_related_fields).filter(**filter_dict)
 
 			#paginated response.

@@ -121,11 +121,11 @@ class RewardsManager(models.Manager):
 		return rewards_data
 
 	def take_action(self, reward_id, action, comments):
-
 		if action == "DELETED":
 			reward_obj = Rewards.objects.get(pk=reward_id)
 			reward_obj.is_deleted = True
 			reward_obj.save()
+			return reward_obj
 
 class Rewards(BaseModel):
 
