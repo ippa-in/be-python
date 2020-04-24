@@ -120,6 +120,13 @@ class RewardsManager(models.Manager):
 			rewards_data.append(obj.serialize())
 		return rewards_data
 
+	def take_action(self, reward_id, action, comments):
+
+		if action == "DELETED":
+			reward_obj = Rewards.objects.get(pk=reward_id)
+			reward_obj.is_deleted = True
+			reward_obj.save()
+
 class Rewards(BaseModel):
 
 	PENDING = "Pending"
@@ -157,7 +164,7 @@ class Rewards(BaseModel):
 		reward_data["from_date"] = self.from_date
 		reward_data["to_date"] = self.to_date
 		reward_data["status"] = self.status
-		reward_data["network_name"] = {"id": self.network.pk, "image_url":self.network.image_url}
+		reward_data["network"] = {"name":self.name, "id": self.network.pk, "image_url":self.network.image_url}
 		reward_data["point_name"] = self.point_name
 		reward_data["goal_points"] = self.goal_points
 		reward_data["more_info_link"] = self.more_info_link
