@@ -66,6 +66,44 @@ class DashBoardImage(BaseModel):
 			self.img_url = img_url
 		self.save()
 
+class AdManager(models.Manager):
+	
+	def add_ad(self, redirect_url=None, img_url=None):
+
+		ad_order_old = Ad.objects.filter(is_deleted=False).count()
+		ad_order_new = ad_order_old + 1
+		ad_obj = Ad.objects.create(redirect_url=redirect_url, img_url=img_url, 
+									order=ad_order_new)
+		return ad_obj
+
+	def bulk_serializer(self, queryset):
+
+		ad_data = []
+		for obj in queryset:
+			ad_data.append(obj.serializer())
+		return ad_data
+
+class Ad(BaseModel):
+
+	redirect_url = models.TextField(null=True, blank=True)
+	img_url = models.TextField(null=True, blank=True)
+	order = models.IntegerField()
+
+	objects = AdManager()
+
+	def __unicode__(self):
+		return str(self.pk)
+
+	def serializer(self):
+
+		ad_dict = {
+			"id":self.pk,
+			"redirect_url":self.redirect_url,
+			"img_s3_url":self.img_url,
+			"order":self.order
+		}
+		return ad_dict
+
 class PointsManager(models.Manager):
 
 	def add_excel(self, title=None, no_of_rows=None, file_url=None):

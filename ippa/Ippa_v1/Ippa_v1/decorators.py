@@ -119,7 +119,6 @@ class decorator_4xx_admin(object):
 	"""
 	This decorator is admin test.
 	"""
-
 	def __init__(self, mand_params):
 		self.mand_params = mand_params
 

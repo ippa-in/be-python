@@ -14,6 +14,7 @@ DECLINED_BANK_ACC_INFO_SEGMENT = "declined_ba_segment"
 
 POINTS_SUB_SEGMENT = "points_content"
 IMAGES_SUB_SEGMENT = "images_content"
+AD_SUB_SEGMENT = "ads_content"
 USER_SEGMENT = "user_content"
 TRANSACTION_SEGMENT = "transaction_content"
 REWARD_SEGMENT = "reward_content"
@@ -237,6 +238,19 @@ NAVIGATION_BAR = [
 				"name":"Dashboard Images",
 				"content_type":IMAGES_SUB_SEGMENT,
 				"order":"2",
+				"is_default":False,
+				"filter_query":{
+					"limit":50,
+					"offset":0,
+					"data_type":"all"
+				},
+				"sort_key":["order"],
+				"tertiary_segment":None
+			},
+			{
+				"name":"Advertisements",
+				"content_type":AD_SUB_SEGMENT,
+				"order":"3",
 				"is_default":False,
 				"filter_query":{
 					"limit":50,

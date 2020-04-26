@@ -432,4 +432,65 @@ class RedeemReward(View):
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
+# Create your views here.
+class AdView(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx_admin([])
+	def post(self, request, *args, **kwargs):
+
+		user = request.user
+		ad_img = request.FILES.get("file")
+		redirect_url = request.POST.get("redirect_url", "")
+
+		try:
+			file_name = generate_unique_id("AD")
+			file_s3_url = copy_content_to_s3(ad_img, "AD/"+file_name)
+			ad_obj = Ad.objects.add_ad(redirect_url=redirect_url, img_url=file_s3_url)
+			self.response["res_str"] = "Ad Added Successfully."
+			self.response["res_data"] = {"ad_id":ad_obj.pk}
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+	@decorator_4xx_admin([])
+	def get(self, request, *args, **kwargs):
+
+		try:
+			ad_list = Ad.objects.filter(is_deleted=0).order_by('order')
+			ad_details = list()
+			for ad in ad_list:
+				ad_details.append(ad.serializer())
+			self.response["res_str"] = "Ad fetched Successfully."
+			self.response["res_data"] = ad_details
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+
+	@decorator_4xx_admin([])
+	def put(self, request, *args, **kwargs):
+		"""Todo: Test for image order swapping."""
+		data = request.params_dict
+		action = data.get("action")
+		try:
+			if action == "delete":
+				ad_obj = Ad.objects.filter(pk=data.get("ad_id1"))
+				ad_obj.update(is_deleted=1)
+			elif action == "swap":
+				ad_obj1 = Ad.objects.filter(pk=data.get("ad_id1"))
+				ad_obj2 = Ad.objects.filter(pk=data.get("ad_id2"))
+				ad1_order = ad_obj1[0].order
+				ad_obj1.update(order=ad_obj2[0].order)
+				ad_obj2.update(order=ad1_order)
+			self.response["res_str"] = "Ad updated Successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+
 

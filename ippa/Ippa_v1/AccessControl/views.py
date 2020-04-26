@@ -147,7 +147,6 @@ class UploadKYC(View):
 
 	@decorator_4xx([])
 	def get(self, request, *args, **kwargs):
-
 		user = request.user
 		try:
 			kyc_details = dict()
