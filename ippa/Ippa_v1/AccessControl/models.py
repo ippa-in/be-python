@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from django.db import models, transaction
 from django.contrib.postgres.fields import ArrayField, JSONField
 
@@ -136,7 +138,7 @@ class IppaUser(BaseModel):
 		user_details["email_id"] = self.email_id
 		user_details["name"] = self.name
 		user_details["user_name"] = self.user_name
-		user_details["dob"]	= self.dob
+		user_details["dob"]	= self.dob.strftime("%d-%m-%Y") 
 		user_details["mobile_number"] = self.mobile_number
 		user_details["email_id"] = self.email_id
 		user_details["points"] = self.points
@@ -158,6 +160,7 @@ class IppaUser(BaseModel):
 
 		for key, value in params_dict.iteritems():
 			if key == "dob" and value:
+				value = datetime.strptime(value, "%d-%m-%Y")
 				self.dob = value
 			if key == "city" and value:
 				self.city = value
