@@ -14,7 +14,7 @@ from .utils import (send_take_action_on_txn_email_to_admin, send_txn_info_email_
 					send_bank_acc_add_mail_to_admin, send_bank_acc_add_mail_to_user,
 					bank_acc_action_taken_mail_to_user, txn_action_taken_mail_to_user)
 from .constants import *
-from .exceptions import BANK_ACC_NOT_EXIST, LESS_POINTS
+from .exceptions import BANK_ACC_NOT_EXIST, LESS_POINTS, ACCOUNT_ALREADY_EXISTS
 from NotificationEngine.models import NotificationMessage
 
 # Create your views here.
