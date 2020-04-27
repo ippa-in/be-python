@@ -872,7 +872,7 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Network",
-			"lookup_key":"network_name",
+			"lookup_key":"network.name",
 			"key_type":"string",
 			"order":4
 		},
