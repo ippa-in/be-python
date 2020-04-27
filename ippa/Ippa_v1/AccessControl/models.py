@@ -138,7 +138,7 @@ class IppaUser(BaseModel):
 		user_details["email_id"] = self.email_id
 		user_details["name"] = self.name
 		user_details["user_name"] = self.user_name
-		user_details["dob"]	= self.dob.strftime("%d-%m-%Y") 
+		user_details["dob"]	= self.dob.strftime("%d-%m-%Y") if self.dob else ""
 		user_details["mobile_number"] = self.mobile_number
 		user_details["email_id"] = self.email_id
 		user_details["points"] = self.points
