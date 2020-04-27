@@ -80,7 +80,6 @@ class BankAccountManager(models.Manager):
 		return bank_acc
 
 	def get_active_bank_details(self, user_id):
-
 		acc_details = dict()
 		try:
 			active_bank_acc = BankAccount.objects.get(user_id=user_id, is_deleted=0)
