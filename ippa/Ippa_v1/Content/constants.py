@@ -19,6 +19,12 @@ USER_SEGMENT = "user_content"
 TRANSACTION_SEGMENT = "transaction_content"
 REWARD_SEGMENT = "reward_content"
 
+#REWARD NOTIFICATION KEY
+REWARD_ADMIN_MAIL = "offer_redeemed_notification"
+REWARD_USER_MAIL = "offer_redeemed_notification_user"
+
+REWARD_ALREADY_REDEEMEED = "Reward is already redeemed."
+LESS_POINTS = "Not suffiecient points to redeem reward."
 #NAVIGATION BAR STRUCTURE
 NAVIGATION_BAR = [
 	{
@@ -78,7 +84,7 @@ NAVIGATION_BAR = [
 							"offset":0,
 							"data_type":"all",
 							"query":{
-								"kyc_status":"Approved"
+								"kyc_status":"Verified"
 							}
 						},
 						"sort_key":[],
@@ -191,7 +197,7 @@ NAVIGATION_BAR = [
 							"offset":0,
 							"data_type":"all",
 							"query":{
-								"status":"Approved"
+								"status":"Verified"
 							}
 						},
 						"sort_key":[],
@@ -614,19 +620,19 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Status",
-			"lookup_key":"kyc_status",
+			"lookup_key":"status",
 			"key_type":"status",
 			"order":3
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"email_id",
+			"lookup_key":"user.email_id",
 			"key_type":"string",
 			"order":4
 		},
 		{
 			"display_name":"Phone",
-			"lookup_key":"mobile_number",
+			"lookup_key":"user.mobile_number",
 			"key_type":"string",
 			"order":5
 		},
@@ -658,19 +664,19 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Status",
-			"lookup_key":"kyc_status",
+			"lookup_key":"status",
 			"key_type":"status",
 			"order":3
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"email_id",
+			"lookup_key":"user.email_id",
 			"key_type":"string",
 			"order":4
 		},
 		{
 			"display_name":"Phone",
-			"lookup_key":"mobile_number",
+			"lookup_key":"user.mobile_number",
 			"key_type":"string",
 			"order":5
 		},
@@ -702,19 +708,19 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Status",
-			"lookup_key":"kyc_status",
+			"lookup_key":"status",
 			"key_type":"status",
 			"order":3
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"email_id",
+			"lookup_key":"user.email_id",
 			"key_type":"string",
 			"order":4
 		},
 		{
 			"display_name":"Phone",
-			"lookup_key":"mobile_number",
+			"lookup_key":"user.mobile_number",
 			"key_type":"string",
 			"order":5
 		},

@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import pytz
+from datetime import datetime
+
 from django.shortcuts import render
 from django.views.generic import View
+from django.db.models import Sum
 
 from Ippa_v1.decorators import decorator_4xx, decorator_4xx_admin
 from Ippa_v1.responses import *
@@ -12,8 +16,13 @@ from AccessControl.models import IppaUser
 from AccessControl.constants import STR_ACTION_NOT_ALLOWED
 from AccessControl.exceptions import ACTION_NOT_ALLOWED
 from Content.models import *
-from Content.utils import read_excel_file, read_csv_file
+from Content.utils import (read_excel_file, read_csv_file,
+							send_offer_redeemed_email_to_admin,
+							send_offer_redeemed_email_to_user
+							) 
 from Content.constants import *
+from Content.exceptions import *
+from Network.models import NetworkPoints
 from Transaction.interface import bulk_txn_create
 
 # Create your views here.
@@ -350,10 +359,33 @@ class GetRewards(View):
 		data = request.GET
 		network_id = data.get("network_id")
 		try:
+			today = datetime.now().replace(tzinfo=pytz.timezone('UTC'))
 			rewards = Rewards.objects.filter(
-						status__in=[Rewards.ACTIVE, Rewards.EXPIRED], 
-						network__network_id=network_id)
+						status__in=[Rewards.ACTIVE], 
+						network__network_id=network_id,
+						is_redeemed=False,
+						).exclude(deactivate_date__day=today.day,
+									deactivate_date__month=today.month,
+									deactivate_date__year=today.year)
 			reward_details =  Rewards.objects.bulk_serializer(rewards)
+			for reward in reward_details:
+				points_credit_dict = NetworkPoints.objects.filter(created_on__gte=reward["from_date"],
+												created_on__lte=reward["to_date"],
+												txn_type=NetworkPoints.DEPOSIT)\
+												.aggregate(points_cre=Sum('points'))
+				points_credit = points_credit_dict.get("points_cre")
+				points_debit_dict = NetworkPoints.objects.filter(created_on__gte=reward["from_date"],
+												created_on__lte=reward["to_date"],
+												txn_type=NetworkPoints.WITHDRAW)\
+												.aggregate(points_deb=Sum('points'))
+				points_debit = points_debit_dict.get("points_deb")
+				points_earned = points_credit - points_debit if points_credit > points_debit else 0
+				reward["points_earned"] = points_earned
+				if reward["goal_points"] > points_earned:
+					is_active = False
+				if today > reward["to_date"]:
+					is_active = False
+					reward["status"] = Rewards.EXPIRED
 			self.response["res_str"] = "Rewards details fetch successfully."
 			self.response["res_data"] = reward_details
 			return send_200(self.response)
@@ -420,12 +452,39 @@ class RedeemReward(View):
 	def dispatch(self, *args, **kwargs):
 		return super(self.__class__, self).dispatch(*args, **kwargs)
 
+	@decorator_4xx(["reward_id"])
 	def post(self, request, *args, **kwargs):
 
 		"""
 		Deduct point and redeem reward.
 		"""
+		reward_id=request.POST["reward_id"]
 		try:
+			reward = Rewards.objects.get(pk=reward_id)
+			if reward.is_redeemed:
+				raise RewardRedeemed(REWARD_ALREADY_REDEEMEED)
+			points_credit_dict = NetworkPoints.objects.filter(created_on__gte=reward.from_date,
+											created_on__lte=reward.to_date,
+											txn_type=NetworkPoints.DEPOSIT)\
+											.aggregate(points_cre=Sum('points'))
+			points_credit = points_credit_dict.get("points_cre")
+			points_debit_dict = NetworkPoints.objects.filter(created_on__gte=reward.from_date,
+											created_on__lte=reward.to_date,
+											txn_type=NetworkPoints.WITHDRAW)\
+											.aggregate(points_deb=Sum('points'))
+			points_debit = points_debit_dict.get("points_deb")
+			points_earned = points_credit - points_debit if points_credit > points_debit else 0
+			points_earned=500
+			if not points_earned:
+				raise NotEnoughPoints(LESS_POINTS)
+			NetworkPoints.objects.create_txn(user=request.user, 
+							network=reward.network,
+							points=int(reward.goal_points),
+							txn_type=NetworkPoints.WITHDRAW)
+			reward.is_redeemed = True
+			reward.save()
+			send_offer_redeemed_email_to_admin(REWARD_ADMIN_MAIL, reward, request.user)
+			send_offer_redeemed_email_to_user(REWARD_USER_MAIL, reward, request.user)
 			self.response["res_str"] = "Reward redeemed  Successfully."
 			return send_200(self.response)
 		except Exception as ex:

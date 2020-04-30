@@ -101,7 +101,30 @@ class PlayerTag(BaseModel):
 		tagging_dict["user_name"] = self.tag_user_name
 		tagging_dict["status"] = self.status
 		return tagging_dict
-		
+
+class NetworkPointsManager(models.Manager):
+
+	def create_txn(self, user, network, points, txn_type):
+
+		network_point = NetworkPoints.objects.create(user=user, network=network, 
+											points=points, txn_type=txn_type)
+
+class NetworkPoints(BaseModel):
+
+	WITHDRAW = "Withdraw"
+	DEPOSIT = "Deposit"
+	point_type_choices = ((WITHDRAW, "Withdraw"),
+						(DEPOSIT, "Deposit"))
+
+	user = models.ForeignKey(IppaUser, null=True, blank=True, related_name="user_network_points")
+	network = models.ForeignKey(Network, null=True, blank=True, related_name="user_points_networks")
+	points = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
+	txn_type = models.CharField(max_length=255, default=DEPOSIT, choices=point_type_choices)
+
+	objects = NetworkPointsManager()
+
+	def __unicode__(self):
+		return self.user_id + " " + self.network_id
 
 
 

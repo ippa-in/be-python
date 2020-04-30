@@ -2,7 +2,7 @@ from django.db import transaction
 from datetime import datetime
 
 from Transaction.models import Transaction
-from Network.models import PlayerTag
+from Network.models import PlayerTag, NetworkPoints
 from Transaction.exceptions import UserNotTagged, TxnCreationFailed
 from Transaction.constants import USER_NOT_TAGGED_STR
 from Transaction.utils import *
@@ -27,8 +27,9 @@ def bulk_txn_create(txn_data):
 														is_deleted=False).first()
 
 				if not network_tagging_obj:
-					err_msg = USER_NOT_TAGGED_STR.format(network_user_name, network_name)
-					raise UserNotTagged(err_msg)
+					continue
+					# err_msg = USER_NOT_TAGGED_STR.format(network_user_name, network_name)
+					# raise UserNotTagged(err_msg)
 
 				tagged_user = network_tagging_obj.user
 				txn_date = datetime.strptime(txn.get("Date"), "%d-%m-%Y")
@@ -43,11 +44,20 @@ def bulk_txn_create(txn_data):
 				txn_obj = Transaction.objects.create_txn(**txn_detail)
 				txn_obj_list.append(txn_obj)
 				txn_count = txn_count + 1
+
 				#update user points
+
 				user_points = tagged_user.points
-				user_points["redeemable_points"] += int(txn.get("Amount"))
+				user_points["current_month_points"] += int(txn.get("Amount"))
+				user_points["total_points"] += int(txn.get("Amount"))
 				tagged_user.points = user_points
 				tagged_user.save()
+
+				#add network specific points
+				NetworkPoints.objects.create_txn(user=tagged_user, 
+								network=network_tagging_obj.network,
+								points=int(txn.get("Amount")),
+								txn_type=NetworkPoints.DEPOSIT)
 
 				#initiate points notification
 				month = txn_date.strftime("%B")

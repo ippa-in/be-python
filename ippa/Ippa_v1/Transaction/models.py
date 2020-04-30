@@ -120,7 +120,12 @@ class BankAccount(BaseModel):
 			"bank":self.bank.serialize(),
 			"ifsc_code":self.ifsc,
 			"status":self.status,
-			"user_id":self.user.pk
+			"user_id":self.user.pk,
+			"user":{
+				"user_name":self.user.user_name,
+				"email":self.user.email_id,
+				"phone":self.user.mobile_number
+			}
 		}
 		return bank_acc_dict
 

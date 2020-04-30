@@ -11,7 +11,7 @@ def send_take_action_on_txn_email_to_admin(notification_key, txn_obj, user, to=[
 			"user_name":user.name,
 			"link":""
 		},
-		"to":["sandeepks.6198@gmail.com"]
+		"to":[user.email_id]
 	}
 
 	try:
@@ -44,7 +44,7 @@ def send_bank_acc_add_mail_to_admin(notification_key, bank_acc_obj, user, to=[],
 			"user_name":user.name,
 			"link":""
 		},
-		"to":["sandeepks.6198@gmail.com"],
+		"to":[user.email_id],
 	}
 
 	try:
