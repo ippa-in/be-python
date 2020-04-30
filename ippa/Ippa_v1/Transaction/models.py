@@ -125,7 +125,8 @@ class BankAccount(BaseModel):
 				"user_name":self.user.user_name,
 				"email":self.user.email_id,
 				"phone":self.user.mobile_number
-			}
+			},
+			"date":self.created_on.strftime("%d-%m-%Y")
 		}
 		return bank_acc_dict
 
