@@ -151,15 +151,24 @@ class UploadKYC(View):
 		try:
 			kyc_details = dict()
 			poi_image = user.poi_image.split(",") if user.poi_image else ""
-			if poi_image:
+
+			if len(poi_image) == 1:
+				kyc_details["poi_f_url"] = poi_image[0]
+				kyc_details["poi_b_url"] = ""
+			if len(poi_image) == 2:
 				kyc_details["poi_f_url"] = poi_image[0]
 				kyc_details["poi_b_url"] = poi_image[1]
-				kyc_details["poi_status"] = user.poi_status if user.poi_status else ""
+			kyc_details["poi_status"] = user.poi_status if user.poi_status else ""
+
 			poa_image = user.poa_image.split(",") if user.poa_image else ""
-			if poa_image:
+			if len(poa_image) == 1:
+				kyc_details["poa_f_url"] = poa_image[0]
+				kyc_details["poa_b_url"] = ""
+			if len(poa_image) == 2:
 				kyc_details["poa_f_url"] = poa_image[0]
 				kyc_details["poa_b_url"] = poa_image[1]
-				kyc_details["poa_status"] = user.poi_status if user.poi_status else ""
+			kyc_details["poa_status"] = user.poi_status if user.poi_status else ""
+			
 			self.response["res_str"] = "kyc details fetch successfully."
 			self.response["res_data"] = kyc_details
 			return send_200(self.response)

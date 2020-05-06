@@ -191,8 +191,7 @@ class BankAccountView(View):
 				bank_acc = BankAccount.objects.filter(user=request.user)
 				if bank_acc:
 					raise ACCOUNT_ALREADY_EXISTS(ACCOUNT_EXISTS_STR)
-				bank = Bank.objects.get(bank_id=params.get("bank_id"))
-				bank_account = BankAccount.objects.create_bank_account(params, bank, user)
+				bank_account = BankAccount.objects.create_bank_account(params, user)
 				#add notification string
 				NotificationMessage.objects.add_notification_str(NOTIFICATION_STR_BANK_ACC.format(user.name))
 				#Send mail to admin to approve bank account.
@@ -227,12 +226,10 @@ class BankAccountView(View):
 				bank_acc_action_taken_mail_to_user(USER_BANK_ACC_ACTION_TAKEN_MAIL, 
 													action, bank_acc, user)
 			else:
-				if params.get("bank_id"):
-					bank = Bank.objects.get(bank_id=params.get("bank_id"))
 				bank_acc = BankAccount.objects.get(pk=params.get("bank_acc_id"), user=user)
 				if not bank_acc.status == BankAccount.PENDING:
 					raise BANK_ACC_UPDATION_FAILED(BANK_ACCOUNT_EDIT_FAILED)
-				bank_acc.update_bank_acc(params, bank)
+				bank_acc.update_bank_acc(params)
 			self.response["res_str"] = "Bank account updated successfully."
 			self.response["res_data"] = {"bank_account_id":bank_acc.pk}
 			return send_201(self.response)

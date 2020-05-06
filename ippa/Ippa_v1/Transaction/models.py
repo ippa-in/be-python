@@ -49,13 +49,13 @@ class Bank(BaseModel):
 
 class BankAccountManager(models.Manager):
 	
-	def create_bank_account(self, params, bank, user):
+	def create_bank_account(self, params, user):
 
 		bank_acc_details = {
 			"ifsc":params.get("ifsc"),
 			"acc_name":params.get("acc_name"),
 			"acc_number":params.get("acc_num"),
-			"bank":bank,
+			"bank_name":params.get("bank_name"),
 			"user":user
 		}
 		bank_acc = self.create(**bank_acc_details)
@@ -103,7 +103,7 @@ class BankAccount(BaseModel):
 	acc_name = models.CharField(max_length=255, null=True, blank=True)
 	acc_number = models.CharField(max_length=255, db_index=True)
 	user = models.ForeignKey(IppaUser, related_name="user_bank_account")
-	bank = models.ForeignKey(Bank, null=True, blank=True, related_name="bank_account")
+	bank_name = models.CharField(max_length=255)
 	status = models.CharField(max_length=255, default=PENDING, choices=status_choices)
 	admin_comments = models.TextField(default='', null=True, blank=True)
 	objects = BankAccountManager()
@@ -117,7 +117,7 @@ class BankAccount(BaseModel):
 			"acc_id":self.pk,
 			"acc_name":self.acc_name,
 			"acc_number":self.acc_number,
-			"bank":self.bank.serialize(),
+			"bank_name":self.bank_name,
 			"ifsc_code":self.ifsc,
 			"status":self.status,
 			"user_id":self.user.pk,
@@ -130,14 +130,14 @@ class BankAccount(BaseModel):
 		}
 		return bank_acc_dict
 
-	def update_bank_acc(self, params, bank=None):
+	def update_bank_acc(self, params):
 
 		if params.get("acc_name"):
 			self.acc_name = params.get("acc_name")
 		elif params.get("acc_number"):
 			self.acc_number = params.get("acc_number")
-		if bank:
-			self.bank = bank
+		if bank_name:
+			self.bank_name = params.get("bank_name")
 		if params.get("ifsc_code"):
 			self.ifsc_code = params.get("ifsc_code")
 		self.save()

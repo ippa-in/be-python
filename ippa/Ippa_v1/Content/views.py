@@ -358,6 +358,12 @@ class GetRewards(View):
 		"""
 		data = request.GET
 		network_id = data.get("network_id")
+		is_logged_in = False
+		login_token = request.META.get("HTTP_PLAYER_TOKEN")
+		if login_token and is_token_exists(login_token):
+			is_logged_in = True
+			player_id = request.META.get("HTTP_PLAYER_ID")
+
 		try:
 			today = datetime.now().replace(tzinfo=pytz.timezone('UTC'))
 			rewards = Rewards.objects.filter(
@@ -369,20 +375,23 @@ class GetRewards(View):
 									deactivate_date__year=today.year)
 			reward_details =  Rewards.objects.bulk_serializer(rewards)
 			for reward in reward_details:
-				points_credit_dict = NetworkPoints.objects.filter(created_on__gte=reward["from_date"],
-												created_on__lte=reward["to_date"],
-												txn_type=NetworkPoints.DEPOSIT)\
-												.aggregate(points_cre=Sum('points'))
-				points_credit = points_credit_dict.get("points_cre")
-				points_debit_dict = NetworkPoints.objects.filter(created_on__gte=reward["from_date"],
-												created_on__lte=reward["to_date"],
-												txn_type=NetworkPoints.WITHDRAW)\
-												.aggregate(points_deb=Sum('points'))
-				points_debit = points_debit_dict.get("points_deb")
-				points_earned = points_credit - points_debit if points_credit > points_debit else 0
-				reward["points_earned"] = points_earned
-				if reward["goal_points"] > points_earned:
-					is_active = False
+				if is_logged_in:
+					points_credit_dict = NetworkPoints.objects.filter(created_on__gte=reward["from_date"],
+													created_on__lte=reward["to_date"],
+													txn_type=NetworkPoints.DEPOSIT,
+													user_id=player_id)\
+													.aggregate(points_cre=Sum('points'))
+					points_credit = points_credit_dict.get("points_cre") if points_credit_dict.get("points_cre") else 0
+					points_debit_dict = NetworkPoints.objects.filter(created_on__gte=reward["from_date"],
+													created_on__lte=reward["to_date"],
+													txn_type=NetworkPoints.WITHDRAW,
+													user_id=player_id)\
+													.aggregate(points_deb=Sum('points'))
+					points_debit = points_debit_dict.get("points_deb") if points_debit_dict.get("points_deb") else 0
+					points_earned = points_credit - points_debit if points_credit > points_debit else 0
+					reward["points_earned"] = points_earned
+					if reward["goal_points"] > points_earned:
+						is_active = False
 				if today > reward["to_date"]:
 					is_active = False
 					reward["status"] = Rewards.EXPIRED
