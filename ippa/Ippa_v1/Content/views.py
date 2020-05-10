@@ -54,7 +54,6 @@ class DashboardImage(View):
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
-	@decorator_4xx_admin([])
 	def get(self, request, *args, **kwargs):
 
 		try:
