@@ -17,7 +17,7 @@ urlpatterns = [
 	url(r'^v1/get_rewards_network/$', csrf_exempt(GetRewardsNetworks.as_view()), name="Content_rewards_network"),
 	url(r'^v1/get_rewards/$', csrf_exempt(GetRewards.as_view()), name="Content_reward"),
 	url(r'^v1/redeem/$', csrf_exempt(RedeemReward.as_view()), name="Content_redeem_reward"),
-	url(r'^v1/ads/$', csrf_exempt(AdView.as_view()), name="Content_ads"),
+	url(r'^v1/promo_images/$', csrf_exempt(AdView.as_view()), name="Content_ads"),
 
 
 ]

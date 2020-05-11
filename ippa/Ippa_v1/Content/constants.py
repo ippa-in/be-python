@@ -494,13 +494,13 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"email_id",
+			"lookup_key":"user.email_id",
 			"key_type":"string",
 			"order":4
 		},
 		{
 			"display_name":"Phone",
-			"lookup_key":"mobile_number",
+			"lookup_key":"user.mobile_number",
 			"key_type":"string",
 			"order":5
 		},
@@ -538,13 +538,13 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"email_id",
+			"lookup_key":"user.email_id",
 			"key_type":"string",
 			"order":4
 		},
 		{
 			"display_name":"Phone",
-			"lookup_key":"mobile_number",
+			"lookup_key":"user.mobile_number",
 			"key_type":"string",
 			"order":5
 		},
@@ -582,13 +582,13 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"email_id",
+			"lookup_key":"user.email_id",
 			"key_type":"string",
 			"order":4
 		},
 		{
 			"display_name":"Phone",
-			"lookup_key":"mobile_number",
+			"lookup_key":"user.mobile_number",
 			"key_type":"string",
 			"order":5
 		},

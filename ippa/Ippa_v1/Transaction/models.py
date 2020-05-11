@@ -52,9 +52,9 @@ class BankAccountManager(models.Manager):
 	def create_bank_account(self, params, user):
 
 		bank_acc_details = {
-			"ifsc":params.get("ifsc"),
+			"ifsc":params.get("ifsc_code"),
 			"acc_name":params.get("acc_name"),
-			"acc_number":params.get("acc_num"),
+			"acc_number":params.get("acc_number"),
 			"bank_name":params.get("bank_name"),
 			"user":user
 		}
@@ -136,7 +136,7 @@ class BankAccount(BaseModel):
 			self.acc_name = params.get("acc_name")
 		elif params.get("acc_number"):
 			self.acc_number = params.get("acc_number")
-		if bank_name:
+		if params.get("bank_name"):
 			self.bank_name = params.get("bank_name")
 		if params.get("ifsc_code"):
 			self.ifsc_code = params.get("ifsc_code")
