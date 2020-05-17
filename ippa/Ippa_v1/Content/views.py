@@ -22,6 +22,7 @@ from Content.utils import (read_excel_file, read_csv_file,
 							) 
 from Content.constants import *
 from Content.exceptions import *
+from Content.interface import bulk_tournament_create
 from Network.models import NetworkPoints
 from Transaction.interface import bulk_txn_create
 
@@ -558,5 +559,100 @@ class AdView(View):
 			return send_200(self.response)
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
+
+class PromotionView(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx_admin([])
+	def post(self, request, *args, **kwargs):
+		user = request.user
+		params_dict = request.params_dict
+		action = params_dict.get("action")
+		try:
+			tournament_file = request.FILES.get("tournament_file")
+			file_name = request.POST.get("file_name")
+			if tournament_file:
+				if ".xlsx" in file_name:
+					tournament_data = read_excel_file(tournament_file)
+				elif ".csv" in file_name:
+					tournament_data = read_csv_file(tournament_file)
+
+				bulk_tournament_created = bulk_tournament_create(tournament_data)
+
+				#Upload file to s3
+				tournament_file.seek(0)
+				file_name = generate_unique_id("tournament")
+				file_s3_url = copy_content_to_s3(tournament_file, "TOUR/"+file_name)
+			if action == "create":
+				promotion_obj = Promotions.objects.create_promotion(params_dict, file_s3_url)
+				response_str = "Promotion Added Successfully."
+			if action == "update":
+				promotion_obj = Promotions.objects.get(network_name=params_dict.get("network_name"))
+				promotion_obj.update_promotion(tour_file_s3_url, True)
+			self.response["res_str"] = "Promotion Added Successfully."
+			self.response["res_data"] = {"promotion_id":promotion_obj.pk}
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+	def get(self, request, *args, **kwargs):
+
+		is_logged_in = False
+		is_admin = False
+		show_buttons = False
+		login_token = request.META.get("HTTP_PLAYER_TOKEN")
+		if login_token and is_token_exists(login_token):
+			is_logged_in = True
+			player_id = request.META.get("HTTP_PLAYER_ID")
+			user = IppaUser.objects.get(player_id=player_id)
+			is_admin = user.is_admin
+		network_name = request.GET["network_name"]
+		try:
+			if is_admin:
+				promotions_list = Promotions.objects.filter(is_deleted=0, status__in=["Pending", "Preview"])\
+													.filter(network_name=network_name)
+
+			else:
+				promotions_list = Promotions.objects.filter(is_deleted=0, status="Live")\
+													.filter(network_name=network_name)
+			promotions = list()
+			for promotion in promotions_list:
+				promotions.append(promotion.serializer())
+			if is_admin and is_logged_in:
+				show_buttons = True
+			self.response["res_str"] = "Promotions fetched Successfully."
+			self.response["res_data"] = {
+											"promotions":promotions,
+											"show_buttons":show_buttons
+										}
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+
+	@decorator_4xx_admin([])
+	def put(self, request, *args, **kwargs):
+		"""Todo: Test for image order swapping."""
+
+		data = request.params_dict
+		action = data.get("action")
+		network_name = data.get("network_name")
+		try:
+			promotion_obj = Promotions.objects.get(network_name=network_name)
+			promotion_obj.update_promotion(data, action)
+			self.response["res_str"] = "Promotion updated Successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+
 
 

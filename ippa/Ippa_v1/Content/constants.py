@@ -1,3 +1,22 @@
+#PROMOTIONS CONSTANT
+DEPOSIT_BONUS = {
+	"code":"",
+	"benefits":list(),
+	"note_str":""
+}
+EDITABLE_FIELDS = {
+	"cover_photo":True,
+	"intro_title":True,
+	"intro_desc":True,
+	"pokergenie_carousal":True,
+	"code":True,
+	"benefits":True,
+	"note_str":True,
+	"tournament_title":True,
+	"tournament_file_upload":True
+}
+
+
 BULK_TXN_CREATION_HAS_FAILED = "Bulk transaction has failed."
 DASHBOARD_SEGEMENT = "dashboard_content"
 
@@ -18,6 +37,7 @@ AD_SUB_SEGMENT = "ads_content"
 USER_SEGMENT = "user_content"
 TRANSACTION_SEGMENT = "transaction_content"
 REWARD_SEGMENT = "reward_content"
+TOURNAMENT_SEGMENT = "tournament_content"
 
 #REWARD NOTIFICATION KEY
 REWARD_ADMIN_MAIL = "offer_redeemed_notification"
@@ -335,7 +355,6 @@ NAVIGATION_BAR = [
 		"is_default":False
 
 	},
-
 ]
 
 #Mapping of columns and keys how to get from filter data

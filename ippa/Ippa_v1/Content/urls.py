@@ -3,7 +3,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from Content.views import (GetNavigationBar, DashboardImage, UpdateDashboardImage,
 							PreviewPoints, ManagePoints, PreviewRewards, ManageRewards,
-							GetRewardsNetworks, RedeemReward, GetRewards, AdView)
+							GetRewardsNetworks, RedeemReward, GetRewards, AdView,
+							PromotionView)
 
 
 urlpatterns = [
@@ -18,6 +19,7 @@ urlpatterns = [
 	url(r'^v1/get_rewards/$', csrf_exempt(GetRewards.as_view()), name="Content_reward"),
 	url(r'^v1/redeem/$', csrf_exempt(RedeemReward.as_view()), name="Content_redeem_reward"),
 	url(r'^v1/promo_images/$', csrf_exempt(AdView.as_view()), name="Content_ads"),
+	url(r'^v1/promotions/$', csrf_exempt(PromotionView.as_view()), name="Content_ads"),
 
 
 ]
