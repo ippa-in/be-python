@@ -573,9 +573,11 @@ class PromotionView(View):
 		user = request.user
 		params_dict = request.params_dict
 		action = params_dict.get("action")
+		tournament_file = request.FILES.get("tournament_file")
+		file_name = request.POST.get("file_name")
+		cover_img = request.FILES.get("cover_img")
+		file_s3_url, cover_s3_url = "", ""
 		try:
-			tournament_file = request.FILES.get("tournament_file")
-			file_name = request.POST.get("file_name")
 			if tournament_file:
 				if ".xlsx" in file_name:
 					tournament_data = read_excel_file(tournament_file)
@@ -588,12 +590,19 @@ class PromotionView(View):
 				tournament_file.seek(0)
 				file_name = generate_unique_id("tournament")
 				file_s3_url = copy_content_to_s3(tournament_file, "TOUR/"+file_name)
+			if cover_img:	
+				file_name = generate_unique_id("PRO_COV")
+				cover_s3_url = copy_content_to_s3(cover_img, "PRO_COV/"+file_name)
 			if action == "create":
-				promotion_obj = Promotions.objects.create_promotion(params_dict, file_s3_url)
+				promotion_obj = Promotions.objects.create_promotion(params_dict, file_s3_url,
+																	cover_s3_url)
 				response_str = "Promotion Added Successfully."
 			if action == "update":
-				promotion_obj = Promotions.objects.get(network_name=params_dict.get("network_name"))
-				promotion_obj.update_promotion(tour_file_s3_url, True)
+				promotion_obj = Promotions.objects.get(is_deleted=0, network_name=params_dict.get("network_name"))
+				if file_s3_url:
+					promotion_obj.update_promotion(file_s3_url, action, "TOURNAMENT")
+				if cover_s3_url:
+					promotion_obj.update_promotion(cover_s3_url, action, "COVER")
 			self.response["res_str"] = "Promotion Added Successfully."
 			self.response["res_data"] = {"promotion_id":promotion_obj.pk}
 			return send_200(self.response)
@@ -645,7 +654,7 @@ class PromotionView(View):
 		action = data.get("action")
 		network_name = data.get("network_name")
 		try:
-			promotion_obj = Promotions.objects.get(network_name=network_name)
+			promotion_obj = Promotions.objects.get(is_deleted=0, network_name=network_name)
 			promotion_obj.update_promotion(data, action)
 			self.response["res_str"] = "Promotion updated Successfully."
 			return send_200(self.response)

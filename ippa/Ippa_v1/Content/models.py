@@ -216,20 +216,16 @@ class Rewards(BaseModel):
 
 class PromotionsManager(models.Manager):
 
-	def create_promotion(self, params, tournament_s3_file):
+	def create_promotion(self, params, tournament_s3_file, cover_s3_url):
 
 		promotion_obj = Promotions.objects.create(
 							tournament_title=params.get("tournament_title"),
-							cover_img = params.get("cover_img_url"),
+							cover_img = cover_s3_url,
 							network_name=params.get("network_name"),
 							introduction={"title":params.get("title"), "description":params.get("description")},
 							pokergenie_carousal = params.get("pokergenie_carousal"),
 							tournament_file_url = tournament_s3_file,
-							deposit_bonus = {
-									"code":params.get("code"),
-									"benefits":params.get("benefits"),
-									"note_str":params.get("note_str")
-							}
+							deposit_bonus = params.get("deposit_bonus")
 							)
 		return promotion_obj
 
@@ -269,39 +265,32 @@ class Promotions(BaseModel):
 		promotion_data["network_name"] = self.network_name
 		promotion_data["introduction"] = self.introduction
 		promotion_data["pokergenie_carousal"] = json.loads(self.pokergenie_carousal)
-		promotion_data["deposit_bonus"] = {
-											"note_str":self.deposit_bonus["note_str"],
-											"code":self.deposit_bonus["code"],
-											"benefits":json.loads(self.deposit_bonus["benefits"])
-										}
+		promotion_data["deposit_bonus"] = json.loads(self.deposit_bonus)
 		promotion_data["free_entry_trn"] = self.free_entry_trn
 		promotion_data["status"] = self.status
 		return promotion_data
 
-	def update_promotion(self, data=None, action=None):
+	def update_promotion(self, data=None, action=None, file_upload=None):
 
-		if action == "file_upload":
-			self.tournament_file_url = data
+		if action == "update":
+			if file_upload == "TOURNAMENT":
+				self.tournament_file_url = data
+			if file_upload == "COVER":
+				self.cover_img = data
 		elif action == "preview":
 			self.status = "Preview"
 		elif action == "live":
 			self.status = "Live"
 		else:
 			for key, value in data.iteritems():
-				if key == "conver_img" and value:
-					self.cover_img = value
 				if key == "title" and value:
 					self.introduction["title"] = value
 				if key == "description" and value:
 					self.introduction["description"] = value
 				if key == "pokergenie_carousal" and value:
 					self.pokergenie_carousal = value
-				if key == "code" and value:
-					self.deposit_bonus["code"] = value
-				if key == "benefits" and value:
-					self.deposit_bonus["benefits"] = value
-				if key == "note_str" and value:
-					self.deposit_bonus["note_str"] = value
+				if key == "deposit_bonus" and value:
+					self.deposit_bonus = value
 				if key == "tournament_title" and value:
 					self.tournament_title = value
 		self.save()

@@ -359,3 +359,35 @@ class UploadProfilePic(View):
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
 
+class VerificationLink(View):
+
+	def __init__(self):
+
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@email_decorator_4xx([])
+	def post(self, request, *args, **kwargs):
+
+		player = request.user
+		try:
+			if player.is_email_verified:
+				raise EMAIL_ALREADY_VERIFIED(EMAIL_ALREADY_VERIFIED)
+			email_id = player.email_id
+			token = create_auth_token(player.player_id)
+			set_token(token, player.player_id)
+			send_email_verification_link(EMAIL_VERIFICATION_NOTI, token, player)
+			#add notification string.
+			NotificationMessage.objects.add_notification_str(NOTIFICATION_STRING_SIGNUP.format(player.name))
+			self.response["res_data"] = {"user_id":player.pk}
+			self.response["res_str"] = "Email Verification sent successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+
+
