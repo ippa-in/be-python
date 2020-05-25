@@ -38,6 +38,7 @@ USER_SEGMENT = "user_content"
 TRANSACTION_SEGMENT = "transaction_content"
 REWARD_SEGMENT = "reward_content"
 TOURNAMENT_SEGMENT = "tournament_content"
+PROMOTIONS_SEGMENT = "promotion_segment"
 
 #REWARD NOTIFICATION KEY
 REWARD_ADMIN_MAIL = "offer_redeemed_notification"
@@ -45,6 +46,9 @@ REWARD_USER_MAIL = "offer_redeemed_notification_user"
 
 REWARD_ALREADY_REDEEMEED = "Reward is already redeemed."
 LESS_POINTS = "Not suffiecient points to redeem reward."
+PROMOTIONS_ALREADY_EXIST = "Promotions for this network already exist."
+PROMOTION_DOES_NOT_EXIST = "Promotions for this network does not exist."
+
 #NAVIGATION BAR STRUCTURE
 NAVIGATION_BAR = [
 	{
@@ -352,6 +356,27 @@ NAVIGATION_BAR = [
 			}
 		],
 		"order":"6",
+		"is_default":False
+
+	},
+		{
+		"segment":"Promotions",
+		"sub_segment":[
+			{
+				"name":None,
+				"content_type":PROMOTIONS_SEGMENT,
+				"order":"1",
+				"is_default":True,
+				"filter_query":{
+					"limit":50,
+					"offset":0,
+					"data_type":"all"
+				},
+				"sort_key":[],
+				"tertiary_segment":None
+			}
+		],
+		"order":"7",
 		"is_default":False
 
 	},
@@ -913,6 +938,31 @@ CONTENT_COLUMN_MAPPING = {
 			"key_type":"string",
 			"order":6
 		},
-
+	],
+	TOURNAMENT_SEGMENT:[
+		{
+			"display_name":"DATE & TIME",
+			"lookup_key":"date",
+			"key_type":"date",
+			"order":1
+		},
+		{
+			"display_name":"EVENT NAME",
+			"lookup_key":"event_name",
+			"key_type":"string",
+			"order":2
+		},
+		{
+			"display_name":"BUY-IN",
+			"lookup_key":"buy_in",
+			"key_type":"string",
+			"order":3
+		},
+		{
+			"display_name":"GUARANTEED",
+			"lookup_key":"guaranteed",
+			"key_type":"string",
+			"order":4
+		},
 	],
 }

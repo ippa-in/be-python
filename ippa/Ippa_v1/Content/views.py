@@ -577,6 +577,7 @@ class PromotionView(View):
 		file_name = request.POST.get("file_name")
 		cover_img = request.FILES.get("cover_img")
 		file_s3_url, cover_s3_url = "", ""
+		network_name = params_dict.get("network_name")
 		try:
 			if tournament_file:
 				if ".xlsx" in file_name:
@@ -594,11 +595,14 @@ class PromotionView(View):
 				file_name = generate_unique_id("PRO_COV")
 				cover_s3_url = copy_content_to_s3(cover_img, "PRO_COV/"+file_name)
 			if action == "create":
+				promotion_obj = Promotions.objects.filter(is_deleted=0, network_name=network_name)
+				if promotion_obj:
+					raise PromotionsExist(PROMOTIONS_ALREADY_EXIST)
 				promotion_obj = Promotions.objects.create_promotion(params_dict, file_s3_url,
 																	cover_s3_url)
 				response_str = "Promotion Added Successfully."
 			if action == "update":
-				promotion_obj = Promotions.objects.get(is_deleted=0, network_name=params_dict.get("network_name"))
+				promotion_obj = Promotions.objects.get(is_deleted=0, network_name=network_name)
 				if file_s3_url:
 					promotion_obj.update_promotion(file_s3_url, action, "TOURNAMENT")
 				if cover_s3_url:
@@ -630,6 +634,8 @@ class PromotionView(View):
 			else:
 				promotions_list = Promotions.objects.filter(is_deleted=0, status="Live")\
 													.filter(network_name=network_name)
+			if not promotions_list:
+				raise PromotionsDoesNotExist(PROMOTION_DOES_NOT_EXIST)
 			promotions = list()
 			for promotion in promotions_list:
 				promotions.append(promotion.serializer())
