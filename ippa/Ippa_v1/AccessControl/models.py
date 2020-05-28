@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from datetime import datetime
 
 from django.db import models, transaction
+from django.db.models import Q
 from django.contrib.postgres.fields import ArrayField, JSONField
 
 from AccessControl.constants import *
@@ -26,6 +27,7 @@ class IppaUserManager(models.Manager):
 		self.password = params.get("password")
 		self.referral_code = params.get("referral_code")
 		self.name = params.get("name")
+		self.mobile_number = params.get("mobile_number")
 
 	def _get_user_name(self, name):
 
@@ -37,11 +39,14 @@ class IppaUserManager(models.Manager):
 
 	def _validate_user_data(self):
 
-		from AccessControl.utils import valid_email_id, validate_password
+		from AccessControl.utils import (valid_email_id, validate_password,
+										valid_mobile_no)
 
 		validate_password(self.password)
 		if not valid_email_id(self.email_id):
 			raise Exception("{0} is not valid".format(self.email_id))
+		if not valid_mobile_no(self.mobile_number):
+			raise Exception("{0} format is incorrect.".format(self.mobile_number))
 
 	def _get_user_data_dict(self, params):
 
@@ -52,7 +57,8 @@ class IppaUserManager(models.Manager):
 			"email_id":params.get("email_id"),
 			"password":gen_password_hash(params.get("password")),
 			"name":params.get("name"),
-			"user_name":self._get_user_name(params.get("name"))
+			"user_name":self._get_user_name(params.get("name")),
+			"mobile_number":params.get("mobile_number")
 		}
 		return user_data
 
@@ -60,9 +66,10 @@ class IppaUserManager(models.Manager):
 
 		self._init_user_params(params)
 		self._validate_user_data()
-		user = IppaUser.objects.filter(email_id=self.email_id)
+		user = IppaUser.objects.filter(Q(email_id=self.email_id) | Q(mobile_number=self.mobile_number))
 		if user.exists():
 			raise Exception(USER_ALREADY_EXISTS_STR)
+
 		user_data_set = self._get_user_data_dict(params)
 		with transaction.atomic():
 			ippa_user = IppaUser.objects.create(**user_data_set)
@@ -147,6 +154,7 @@ class IppaUser(BaseModel):
 		user_details["achievements"] = sorted(self.achievements, key=lambda achi: achi["order"])
 		user_details["profile_image"] = self.profile_image
 		user_details["is_email_verified"] = self.is_email_verified
+		user_details["is_mobile_number_verified"] = self.is_mobile_number_verified
 		user_details["kyc_status"] = self.kyc_status
 		user_details["poi_image"] = self.poi_image.split(",") if self.poi_image else list()
 		user_details["poa_image"] = self.poa_image.split(",") if self.poa_image else list()
@@ -164,8 +172,6 @@ class IppaUser(BaseModel):
 				self.dob = value
 			if key == "city" and value:
 				self.city = value
-			if key == "mobile_number" and value:
-				self.mobile_number = value
 			if key == "favourite_hands" and value:
 				self.favourite_hands.append(value)
 			# if key == "user_name" and value:
@@ -175,3 +181,20 @@ class IppaUser(BaseModel):
 			# 	self.user_name = value
 		self.save()
 
+class OTPManager(models.Manager):
+
+	def save_otp(self, otp, user_id):
+
+		otp = OTP.objects.create(otp=otp, user_id=user_id)
+		return otp
+
+class OTP(BaseModel):
+
+	user = models.ForeignKey(IppaUser, null=True, blank=True)
+	otp = models.CharField(max_length=6, null=True, blank=True)
+	is_valid = models.BooleanField(default=True)
+
+	objects = OTPManager()
+
+	def __unicode__(self):
+		return str(self.pk)

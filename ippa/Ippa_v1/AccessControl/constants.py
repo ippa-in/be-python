@@ -8,6 +8,10 @@ PASSWORD_DIDNT_MATCH = "Password and Reset Password are different."
 LOGIN_SUCCESSFUL = "Login Successfully."
 USER_NAME_ALREADY_EXIST = "This username already taken. Try different one."
 EMAIL_ALREADY_VERIFIED = "Email is already Verified."
+USER_DOES_NOT_EXIST = "User does not exist with this mobile number."
+MOBILE_NUMBER_ALREADY_VERIFIED = "Mobile Number is already verifed."
+OTP_IS_EXPIRED = "Otp is verified."
+VALID_PERIOD = 365
 
 TOKEN_STR_FIRST = "WHENIPLAYPOKER"
 TOKEN_STR_LAST = "IDONTLIKELOSINGTHEPOT"

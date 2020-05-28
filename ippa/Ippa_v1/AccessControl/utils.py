@@ -3,14 +3,21 @@ import hashlib
 import string
 import random
 
+from random import randint
+
 from AccessControl.constants import *
-from Ippa_v1.constants import REGEX_PASSWORD_POLICY, EMAIL_REGEX
+from Ippa_v1.constants import REGEX_PASSWORD_POLICY, EMAIL_REGEX, MOBILE_REGEX
 from Ippa_v1.redis_utils import set_token, set_token_exp
 from Ippa_v1.server_config import HOST_FT_URL, HTTP_PROTOCOL
 
 def valid_email_id(email_id):
 
 	if re.match(EMAIL_REGEX, email_id):
+		return True
+	return False
+
+def valid_mobile_no(mobile_number):
+	if re.match(MOBILE_REGEX, mobile_number):
 		return True
 	return False
 
@@ -22,6 +29,9 @@ def validate_password(password):
 
 def gen_password_hash(password):
 	return str(hashlib.sha256(password).hexdigest())
+
+def _get_otp():
+	return randint(100000, 999999)
 
 def create_auth_token(player_id):
 

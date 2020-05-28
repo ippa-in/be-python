@@ -1,5 +1,7 @@
 import re
+import pytz
 import json
+from datetime import datetime
 
 from django.views.generic import View
 from django.http import QueryDict
@@ -7,13 +9,15 @@ from django.http import QueryDict
 from AccessControl.models import *
 from AccessControl.utils import (authenticate_user, gen_password_hash, validate_password,
 								send_email_verification_link, send_reset_password_link,
-								create_auth_token, send_kyc_document_upload_link)
+								create_auth_token, send_kyc_document_upload_link,
+								_get_otp)
 from AccessControl.constants import *
 from AccessControl.exceptions import *
 from Ippa_v1.responses import *
 from Ippa_v1.utils import (copy_content_to_s3, generate_unique_id)
 from Ippa_v1.decorators import decorator_4xx, email_decorator_4xx, decorator_4xx_admin
 from Ippa_v1.redis_utils import set_token, get_token
+from Ippa_v1.service import SMSProvider
 from NotificationEngine.models import NotificationMessage
 
 class SignUp(View):
@@ -45,10 +49,16 @@ class SignUp(View):
 		params = request.POST
 		try:
 			user = IppaUser.objects.create_user(params)
+			#Send email verification string.
 			email_id = params.get("email_id")
 			token = create_auth_token(user.player_id)
 			set_token(token, user.player_id)
 			send_email_verification_link(EMAIL_VERIFICATION_NOTI, token, user)
+			#Send mobile otp.
+			otp = _get_otp()
+			otp_obj = OTP.objects.save_otp(otp, user.player_id)
+			sms_provider = SMSProvider(params.get("mobile_number"))
+			sms_provider._send_sms()
 			#add notification string.
 			NotificationMessage.objects.add_notification_str(NOTIFICATION_STRING_SIGNUP.format(user.name))
 			self.response["res_str"] = "Player registered successfully."
@@ -388,6 +398,80 @@ class VerificationLink(View):
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
+
+class OTPVerification(View):
+
+	def __init__(self):
+		"""Initialize response."""
+
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	def post(self, request, *args, **kwargs):
+		params = request.POST
+		otp = params.get("otp")
+		mobile_number = params.get("mobile_number")
+		try:
+			user = IppaUser.objects.filter(mobile_number=mobile_number)
+			if not user:
+				raise Exception(USER_DOES_NOT_EXIST)
+			user = user[0]
+			if user.is_mobile_number_verified:
+				raise Exception(MOBILE_NUMBER_ALREADY_VERIFIED)
+			otp_obj = OTP.objects.get(user = user, is_valid=True)
+			today = datetime.now().replace(tzinfo=pytz.timezone('UTC'))
+			delta = today - otp_obj.created_on
+			if delta.days > VALID_PERIOD:
+				raise Exception(OTP_IS_EXPIRED)
+			if otp == otp_obj.otp:
+				user.is_mobile_number_verified = True
+				user.save()
+			self.response["res_str"] = "Mobile Number Verified Successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class GenerateOTP(View):
+
+	def __init__(self):
+		"""Initialize response."""
+
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	def post(self, request, *args, **kwargs):
+		params = request.POST
+		mobile_number = params.get("mobile_number")
+		try:
+			user = IppaUser.objects.filter(mobile_number=mobile_number)
+			if not user:
+				raise Exception(USER_DOES_NOT_EXIST)
+			user = user[0]
+			if user.is_mobile_number_verified:
+				raise Exception(MOBILE_NUMBER_ALREADY_VERIFIED)
+			otp_obj = OTP.objects.get(user = user, is_valid=True)
+			otp_obj.is_valid = False
+			otp_obj.save()
+
+			otp = _get_otp()
+			new_otp_obj = OTP.objects.save_otp(otp, user.player_id)
+			sms_provider = SMSProvider(mobile_number)
+			sms_provider._send_sms()
+
+			self.response["res_str"] = "OTP send successfully."
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+
 
 
 
