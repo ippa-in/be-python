@@ -1,1 +1,2 @@
 USER_NAME_ALREADY_EXISTS = "Username already exists for the selected network."
+MYPOKERGENIE_NETWORK_ID = "NTWRK2019101215272553495137IPPA"

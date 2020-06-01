@@ -8,11 +8,12 @@ from django.db.models import Q
 from Network.models import Network, PlayerTag
 from Ippa_v1.decorators import decorator_4xx, decorator_4xx_admin
 from .exceptions import USERNAME_ALREADY_TAKEN
-from .constants import USER_NAME_ALREADY_EXISTS
+from .constants import USER_NAME_ALREADY_EXISTS, MYPOKERGENIE_NETWORK_ID
 from Ippa_v1.responses import *
 from Ippa_v1.redis_utils import is_token_exists
 from AccessControl.models import IppaUser
-from Content.constants import EDITABLE_FIELDS
+from Content.models import Rewards, Promotions
+from Content.constants import EDITABLE_FIELDS, REWARD_SEGMENT, PROMOTIONS_SEGMENT
 
 # Create your views here.
 class ManageNetwork(View):
@@ -118,20 +119,34 @@ class NetworkNames(View):
 
 	def get(self, request, *args, **kwargs):
 
-		is_logged_in = False
-		is_admin = False
-		login_token = request.META.get("HTTP_PLAYER_TOKEN")
-		if login_token and is_token_exists(login_token):
-			is_logged_in = True
-			player_id = request.META.get("HTTP_PLAYER_ID")
-			user = IppaUser.objects.get(player_id=player_id)
-			is_admin = user.is_admin
 		try:
-			networks = Network.objects.filter(status="Active").values_list('name', flat=True)
-			networks = list(networks)
+			content_type = request.GET["content_type"]
+			if content_type == REWARD_SEGMENT:
+				network_ids = Rewards.objects.filter(is_active=True).values_list('network__network_id', flat=True)
+				network_ids_list = list(network_ids)
+				networks = Network.objects.filter(status="Active").filter(network_id__in=network_ids_list)
+				network_data = list()
+				for network in networks:
+					network_data.append(network.serialize())
+			elif content_type == PROMOTIONS_SEGMENT:
+				promotions = Promotions.objects.filter(is_deleted=0).values_list("network_name", flat=True)
+
+				promo_networks = Network.objects.filter(name__in=promotions).exclude(name="IPPA")
+
+				not_promo_networks = Network.objects.exclude(name__in=promotions).exclude(name="IPPA")
+
+				network_data = dict()
+				network_data["network_with_promo"] = list()
+				network_data["network_without_promo"] = list()
+
+				for network in promo_networks:
+					network_data["network_with_promo"].append(network.serialize())
+				for network in not_promo_networks:
+					network_data["network_without_promo"].append(network.serialize())
+
 			self.response["res_str"] = "Network names fetch successfully."
 			self.response["res_data"] = {
-											"network_names":networks,
+											"network_names":network_data,
 											"editable_fields":EDITABLE_FIELDS
 										}
 			return send_200(self.response)
