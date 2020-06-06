@@ -133,7 +133,7 @@ class NetworkNames(View):
 
 				promo_networks = Network.objects.filter(name__in=promotions, status="Active").exclude(name="IPPA")
 
-				not_promo_networks = Network.objects.exclude(name__in=promotions, status="Active").exclude(name="IPPA")
+				not_promo_networks = Network.objects.filter(status="Active").exclude(name__in=promotions).exclude(name="IPPA")
 
 				network_data = dict()
 				network_data["network_with_promo"] = list()
