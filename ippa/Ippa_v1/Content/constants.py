@@ -532,7 +532,7 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Status",
-			"lookup_key":"kyc_status",
+			"lookup_key":"status",
 			"key_type":"status",
 			"order":3
 		},
@@ -576,7 +576,7 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Status",
-			"lookup_key":"kyc_status",
+			"lookup_key":"status",
 			"key_type":"status",
 			"order":3
 		},
@@ -620,7 +620,7 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Status",
-			"lookup_key":"kyc_status",
+			"lookup_key":"status",
 			"key_type":"status",
 			"order":3
 		},
@@ -670,13 +670,13 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"user.email_id",
+			"lookup_key":"user.email",
 			"key_type":"string",
 			"order":4
 		},
 		{
 			"display_name":"Phone",
-			"lookup_key":"user.mobile_number",
+			"lookup_key":"user.phone",
 			"key_type":"string",
 			"order":5
 		},
@@ -714,13 +714,13 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"user.email_id",
+			"lookup_key":"user.email",
 			"key_type":"string",
 			"order":4
 		},
 		{
 			"display_name":"Phone",
-			"lookup_key":"user.mobile_number",
+			"lookup_key":"user.phone",
 			"key_type":"string",
 			"order":5
 		},
@@ -758,13 +758,13 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"user.email_id",
+			"lookup_key":"user.email",
 			"key_type":"string",
 			"order":4
 		},
 		{
 			"display_name":"Phone",
-			"lookup_key":"user.mobile_number",
+			"lookup_key":"user.phone",
 			"key_type":"string",
 			"order":5
 		},
@@ -878,7 +878,7 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"email_id",
+			"lookup_key":"Email",
 			"key_type":"Email",
 			"order":3
 		},

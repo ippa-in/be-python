@@ -131,9 +131,9 @@ class NetworkNames(View):
 			elif content_type == PROMOTIONS_SEGMENT:
 				promotions = Promotions.objects.filter(is_deleted=0).values_list("network_name", flat=True)
 
-				promo_networks = Network.objects.filter(name__in=promotions).exclude(name="IPPA")
+				promo_networks = Network.objects.filter(name__in=promotions, status="Active").exclude(name="IPPA")
 
-				not_promo_networks = Network.objects.exclude(name__in=promotions).exclude(name="IPPA")
+				not_promo_networks = Network.objects.exclude(name__in=promotions, status="Active").exclude(name="IPPA")
 
 				network_data = dict()
 				network_data["network_with_promo"] = list()

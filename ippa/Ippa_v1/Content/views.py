@@ -369,7 +369,6 @@ class GetRewards(View):
 			rewards = Rewards.objects.filter(
 						status__in=[Rewards.ACTIVE], 
 						network__network_id=network_id,
-						is_redeemed=False,
 						).exclude(deactivate_date__day=today.day,
 									deactivate_date__month=today.month,
 									deactivate_date__year=today.year)
