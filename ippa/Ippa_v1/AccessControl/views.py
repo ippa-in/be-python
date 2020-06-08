@@ -465,7 +465,7 @@ class GenerateOTP(View):
 			sms_provider = SMSProvider(mobile_number)
 			sms_provider._send_sms()
 
-			self.response["res_str"] = "OTP send successfully."
+			self.response["res_str"] = "OTP sent successfully."
 			return send_200(self.response)
 		except Exception as ex:
 			self.response["res_str"] = str(ex)

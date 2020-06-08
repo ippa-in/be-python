@@ -373,6 +373,9 @@ class GetRewards(View):
 									deactivate_date__month=today.month,
 									deactivate_date__year=today.year)
 			reward_details =  Rewards.objects.bulk_serializer(rewards)
+			if is_logged_in:
+				redeemed_rewards = RedeemedRewards.objects.filter(user_id=player_id).values_list('reward_id',flat=True)
+				redeemed_rewards_list = list(redeemed_rewards)
 			for reward in reward_details:
 				if is_logged_in:
 					points_credit_dict = NetworkPoints.objects.filter(created_on__gte=reward["from_date"],
@@ -391,6 +394,8 @@ class GetRewards(View):
 					reward["points_earned"] = points_earned
 					if reward["goal_points"] > points_earned:
 						is_active = False
+					if reward["reward_id"] in redeemed_rewards_list:
+						reward["is_redeemed"] = True
 				if today > reward["to_date"]:
 					is_active = False
 					reward["status"] = Rewards.EXPIRED
@@ -467,9 +472,12 @@ class RedeemReward(View):
 		Deduct point and redeem reward.
 		"""
 		reward_id=request.POST["reward_id"]
+		user = request.user
 		try:
 			reward = Rewards.objects.get(pk=reward_id)
-			if reward.is_redeemed:
+			redeemed_rewards = RedeemedRewards.objects.filter(reward_id=reward_id,
+														user=user)
+			if redeemed_rewards:
 				raise RewardRedeemed(REWARD_ALREADY_REDEEMEED)
 			points_credit_dict = NetworkPoints.objects.filter(created_on__gte=reward.from_date,
 											created_on__lte=reward.to_date,
@@ -482,15 +490,13 @@ class RedeemReward(View):
 											.aggregate(points_deb=Sum('points'))
 			points_debit = points_debit_dict.get("points_deb")
 			points_earned = points_credit - points_debit if points_credit > points_debit else 0
-			points_earned=500
 			if not points_earned:
 				raise NotEnoughPoints(LESS_POINTS)
 			NetworkPoints.objects.create_txn(user=request.user, 
 							network=reward.network,
 							points=int(reward.goal_points),
 							txn_type=NetworkPoints.WITHDRAW)
-			reward.is_redeemed = True
-			reward.save()
+			redeemed_obj = RedeemedRewards.objects.add_reward_redeemed(reward, user)
 			send_offer_redeemed_email_to_admin(REWARD_ADMIN_MAIL, reward, request.user)
 			send_offer_redeemed_email_to_user(REWARD_USER_MAIL, reward, request.user)
 			self.response["res_str"] = "Reward redeemed  Successfully."
@@ -571,12 +577,15 @@ class PromotionView(View):
 	def post(self, request, *args, **kwargs):
 		user = request.user
 		params_dict = request.params_dict
+
 		action = params_dict.get("action")
 		tournament_file = request.FILES.get("tournament_file")
 		file_name = request.POST.get("file_name")
 		cover_img = request.FILES.get("cover_img")
-		file_s3_url, cover_s3_url = "", ""
+		htgt_img = request.FILES.get("htgt_img")
+		file_s3_url, cover_s3_url, htgt_s3_url = "", "", ""
 		network_name = params_dict.get("network_name")
+
 		try:
 			if tournament_file:
 				if ".xlsx" in file_name:
@@ -584,7 +593,8 @@ class PromotionView(View):
 				elif ".csv" in file_name:
 					tournament_data = read_csv_file(tournament_file)
 
-				bulk_tournament_created = bulk_tournament_create(tournament_data)
+				bulk_tournament_created = bulk_tournament_create(tournament_data,
+																	network_name)
 
 				#Upload file to s3
 				tournament_file.seek(0)
@@ -593,12 +603,16 @@ class PromotionView(View):
 			if cover_img:	
 				file_name = generate_unique_id("PRO_COV")
 				cover_s3_url = copy_content_to_s3(cover_img, "PRO_COV/"+file_name)
+			if htgt_img:
+				file_name = generate_unique_id("PRO_HTGT")
+				htgt_s3_url = copy_content_to_s3(htgt_img, "TOUR/"+file_name)
+
 			if action == "create":
 				promotion_obj = Promotions.objects.filter(is_deleted=0, network_name=network_name)
 				if promotion_obj:
 					raise PromotionsExist(PROMOTIONS_ALREADY_EXIST)
 				promotion_obj = Promotions.objects.create_promotion(params_dict, file_s3_url,
-																	cover_s3_url)
+																	cover_s3_url, htgt_s3_url)
 				response_str = "Promotion Added Successfully."
 			if action == "update":
 				promotion_obj = Promotions.objects.get(is_deleted=0, network_name=network_name)
@@ -606,6 +620,8 @@ class PromotionView(View):
 					promotion_obj.update_promotion(file_s3_url, action, "TOURNAMENT")
 				if cover_s3_url:
 					promotion_obj.update_promotion(cover_s3_url, action, "COVER")
+				if htgt_s3_url:
+					promotion_obj.update_promotion(cover_s3_url, action, "HTGT")
 			self.response["res_str"] = "Promotion Added Successfully."
 			self.response["res_data"] = {"promotion_id":promotion_obj.pk}
 			return send_200(self.response)

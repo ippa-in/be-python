@@ -4,6 +4,10 @@ DEPOSIT_BONUS = {
 	"benefits":list(),
 	"note_str":""
 }
+FREE_ENTRY_TOURNAMETS = [
+	"Daily Free Entry Tournaments Totalling to Rs. 49,000.",
+	"Free Entry Tournaments every 30 minutes."
+	]
 EDITABLE_FIELDS = {
 	"cover_photo":True,
 	"intro_title":True,

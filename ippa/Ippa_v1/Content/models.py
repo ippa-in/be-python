@@ -7,7 +7,8 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 
 from Ippa_v1.utils import *
 from Network.models import Network
-from .constants import DEPOSIT_BONUS
+from AccessControl.models import IppaUser
+from .constants import DEPOSIT_BONUS, FREE_ENTRY_TOURNAMETS
 
 
 # Create your models here.
@@ -214,9 +215,33 @@ class Rewards(BaseModel):
 		reward_data["is_active"] = self.is_active
 		return reward_data
 
+class RedeemedRewardsManager(models.Manager):
+
+	def add_reward_redeemed(self, reward, user):
+
+		redeemed_obj = RedeemedRewards.objects.create(reward=reward,
+							user=user,redeemed_date=datetime.now())
+		return redeemed_obj
+
+class RedeemedRewards(models.Model):
+
+	reward = models.ForeignKey(Rewards, null=True, blank=True)
+	user = models.ForeignKey(IppaUser, null=True, blank=True)
+	redeemed_date = models.DateTimeField(null=True, blank=True)
+	objects = RedeemedRewardsManager()
+
+	def __unicode__(self):
+		return str(self.pk)
+
 class PromotionsManager(models.Manager):
 
-	def create_promotion(self, params, tournament_s3_file, cover_s3_url):
+	def create_promotion(self, params, tournament_s3_file, cover_s3_url, htgt_s3_url=""):
+
+		htgt_dict = {
+			"htgt_img":htgt_s3_url,
+			"promo_code":params.get("promo_code", ""),
+			"redirect_url":params.get("redirect_url", "")
+		}
 
 		promotion_obj = Promotions.objects.create(
 							tournament_title=params.get("tournament_title"),
@@ -225,7 +250,9 @@ class PromotionsManager(models.Manager):
 							introduction={"title":params.get("title"), "description":params.get("description")},
 							pokergenie_carousal = params.get("pokergenie_carousal"),
 							tournament_file_url = tournament_s3_file,
-							deposit_bonus = params.get("deposit_bonus")
+							deposit_bonus = params.get("deposit_bonus"),
+							free_entry_trn = FREE_ENTRY_TOURNAMETS,
+							htgt = htgt_dict
 							)
 		return promotion_obj
 
@@ -268,6 +295,7 @@ class Promotions(BaseModel):
 		promotion_data["deposit_bonus"] = json.loads(self.deposit_bonus)
 		promotion_data["free_entry_trn"] = self.free_entry_trn
 		promotion_data["status"] = self.status
+		promotion_data["htgt_dict"] = self.htgt
 		return promotion_data
 
 	def update_promotion(self, data=None, action=None, file_upload=None):
@@ -277,6 +305,8 @@ class Promotions(BaseModel):
 				self.tournament_file_url = data
 			if file_upload == "COVER":
 				self.cover_img = data
+			if file_upload == "HTGT":
+				self.htgt["htgt_img"] = data
 		elif action == "preview":
 			self.status = "Preview"
 		elif action == "live":
@@ -293,6 +323,10 @@ class Promotions(BaseModel):
 					self.deposit_bonus = value
 				if key == "tournament_title" and value:
 					self.tournament_title = value
+				if key == "redirect_url" and value:
+					self.htgt["redirect_url"] = value
+				if key == "promo_code" and value:
+					self.htgt["promo_code"] = value
 		self.save()
 
 class TournamentsManager(models.Manager):

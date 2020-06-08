@@ -4,13 +4,12 @@ from datetime import datetime
 from Content.exceptions import TournamentCreationFailed
 from Content.models import Tournaments
 
-def bulk_tournament_create(tournament_data):
+def bulk_tournament_create(tournament_data, network_name):
 
 	tournament_obj_list = list()
 	try:
 		with transaction.atomic():
 			for tournament in tournament_data:
-				network_name = tournament.get("Network")
 				previous_tour_obj = Tournaments.objects.filter(network_name=network_name,
 																is_deleted=0)
 				if previous_tour_obj:
@@ -22,7 +21,7 @@ def bulk_tournament_create(tournament_data):
 					"event_name":tournament.get("Event Name"),
 					"buy_in":tournament.get("Buy In"),
 					"guaranteed":tournament.get("Guaranteed"),
-					"network_name":tournament.get("Network"),
+					"network_name":network_name,
 				}
 				tournament_obj = Tournaments.objects.create_tournament(**tournament_detail)
 				tournament_obj_list.append(tournament_obj)
