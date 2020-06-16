@@ -1,4 +1,5 @@
 import boto3
+import os
 
 from datetime import datetime
 from random import randint
@@ -19,10 +20,19 @@ def generate_unique_id(key):
 def copy_content_to_s3(file, key):
 
 	file_s3_url = S3_URL + "/" + key
+	#extension of file
+	file_name, ext = os.path.splitext(file.name)
 
 	client = boto3.client('s3', aws_access_key_id=AWS_SECRET_KEY_ID,
 								aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-	client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME, Key=key)
+	if ext == ".svg":
+		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
+							Key=key, ContentType='image/svg+xml')
+	if ext == ".png":
+		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
+							Key=key, ContentType='image/jpeg')
+	else:
+		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME, Key=key)
 
 	return file_s3_url
 

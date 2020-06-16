@@ -643,7 +643,7 @@ class PromotionView(View):
 		network_name = request.GET["network_name"]
 		try:
 			if is_admin:
-				promotions_list = Promotions.objects.filter(is_deleted=0, status__in=["Pending", "Preview"])\
+				promotions_list = Promotions.objects.filter(is_deleted=0)\
 													.filter(network_name=network_name)
 
 			else:
