@@ -28,7 +28,7 @@ def copy_content_to_s3(file, key):
 	if ext == ".svg":
 		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
 							Key=key, ContentType='image/svg+xml')
-	if ext == ".png":
+	if ext == ".png" or ext == ".jpg":
 		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
 							Key=key, ContentType='image/jpeg')
 	else:
