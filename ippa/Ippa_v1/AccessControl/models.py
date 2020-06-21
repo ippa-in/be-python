@@ -66,9 +66,12 @@ class IppaUserManager(models.Manager):
 
 		self._init_user_params(params)
 		self._validate_user_data()
-		user = IppaUser.objects.filter(Q(email_id=self.email_id) | Q(mobile_number=self.mobile_number))
-		if user.exists():
-			raise Exception(USER_ALREADY_EXISTS_STR)
+		user_email = IppaUser.objects.filter(email_id=self.email_id)
+		user_mobile = IppaUser.objects.filter(mobile_number=self.mobile_number)
+		if user_email.exists():
+			raise Exception(USER_EMAIL_ALREADY_EXISTS_STR)
+		if user_mobile.exists():
+			raise Exception(USER_MOBILE_NO_ALREADY_EXISTS_STR)
 
 		user_data_set = self._get_user_data_dict(params)
 		with transaction.atomic():

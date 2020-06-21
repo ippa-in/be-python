@@ -140,6 +140,7 @@ class BankAccount(BaseModel):
 			self.bank_name = params.get("bank_name")
 		if params.get("ifsc_code"):
 			self.ifsc_code = params.get("ifsc_code")
+		self.status = BankAccount.PENDING
 		self.save()
 
 class TransactionManager(models.Manager):

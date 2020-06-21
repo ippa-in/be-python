@@ -1,6 +1,7 @@
 PWD_INVALID_ERR = "Password must contain at least one number, one upper and lowercase letter, one special character and length should be at least 8"
 
-USER_ALREADY_EXISTS_STR = "Your profile already exist with same email id or mobile_number. Try logging in instead."
+USER_MOBILE_NO_ALREADY_EXISTS_STR = "Phone number already exists."
+USER_EMAIL_ALREADY_EXISTS_STR = "Email ID already exists."
 VERIFY_YOUR_EMAIL_ID = "Please verify your email ID."
 USER_PROFILE_DOES_NOT_EXISTS_STR = 'User does not exist in our system.'
 INVAILD_PASSWORD_STR = 'You have entered invalid email-id or password.'

@@ -3,6 +3,7 @@ REDEEMABLE_POINTS_IS_ZERO = "Not enough redeemable points to withdraw."
 ACCOUNT_EXISTS_STR = "One active account already exists. Contact admin "
 STR_ACTION_NOT_ALLOWED = "Unauthorized"
 USER_NOT_TAGGED_STR = "{} username is not tagged to {} network."
+BANK_ACCOUNT_EDIT_FAILED = "Bank Details can not be updated."
 
 #Notificaiton keys for sending transaction mail
 ADMIN_TXN_ACTION_MAIL = 'admin_action_notification'

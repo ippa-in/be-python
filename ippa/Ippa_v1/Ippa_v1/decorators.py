@@ -44,21 +44,25 @@ class decorator_4xx(object):
 				msg_str = ', '.join(missing_params) + " are mandatory parameters."
 				return HttpResponseBadRequest(msg_str)
 
-			#validate token if valid add user to request object(todo)
 			player_id = request.META.get("HTTP_PLAYER_ID")
 			token = request.META.get("HTTP_PLAYER_TOKEN")
-			try:
-				user = IppaUser.objects.get(player_id=player_id, is_deleted=0)
-			except IppaUser.DoesNotExist:
-				return HttpResponse("Invalid User", status=401)
 
-			#check for email validation
-			if not user.is_email_verified:
-				return HttpResponse("Please verify your email id.", status=200)
-			if not is_token_exists(token):
-				return HttpResponse("Please Login Again.", status=401)
-			set_expire_time(token)
-			request.user = user
+			#For some content type no login is required Ex: tournament_content.
+			#Skipping below checks for those content_type
+			content_type = params.get("display_name")
+			if token or not content_type in ["tournament_content"]:
+				try:
+					user = IppaUser.objects.get(player_id=player_id, is_deleted=0)
+				except IppaUser.DoesNotExist:
+					return HttpResponse("Invalid User", status=401)
+
+				#check for email validation
+				if not user.is_email_verified:
+					return HttpResponse("Please verify your email id.", status=200)
+				if not is_token_exists(token):
+					return HttpResponse("Please Login Again.", status=401)
+				set_expire_time(token)
+				request.user = user
 
 			return func(*args, **kwargs)
 		return inner

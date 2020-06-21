@@ -214,21 +214,19 @@ class BankAccountView(View):
 		"""
 		params = request.params_dict
 		user = request.user
+		action = params.get("action")
 		try:
-			if user.is_admin:
+			if user.is_admin and not action == "update":
 				bank_acc = BankAccount.objects.get(pk=params.get("bank_acc_id"),
 													status=BankAccount.PENDING)
-				action = params.get("action")
 				if action == "approved":
 					bank_acc.status = BankAccount.VERIFIED
 				elif action == "declined":
 					bank_acc.status = BankAccount.DECLINED
 				bank_acc_action_taken_mail_to_user(USER_BANK_ACC_ACTION_TAKEN_MAIL, 
 													action, bank_acc, user)
-			else:
+			if action == "update":
 				bank_acc = BankAccount.objects.get(pk=params.get("bank_acc_id"), user=user)
-				if not bank_acc.status == BankAccount.PENDING:
-					raise BANK_ACC_UPDATION_FAILED(BANK_ACCOUNT_EDIT_FAILED)
 				bank_acc.update_bank_acc(params)
 			self.response["res_str"] = "Bank account updated successfully."
 			self.response["res_data"] = {"bank_account_id":bank_acc.pk}
