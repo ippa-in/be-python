@@ -31,14 +31,18 @@ def bulk_txn_create(txn_data):
 					# err_msg = USER_NOT_TAGGED_STR.format(network_user_name, network_name)
 					# raise UserNotTagged(err_msg)
 
+				network_obj = network_tagging_obj.network
+				conversion_exp = network_obj.net_to_ippa_exp
+				network_points = txn.get("Amount")
+				ippa_points = int(round(float(network_points)*eval(conversion_exp)))
 				tagged_user = network_tagging_obj.user
 				txn_date = datetime.strptime(txn.get("Date"), "%d-%m-%Y")
 				txn_detail = {
 					"txn_date":txn_date,
 					"txn_type":Transaction.DEPOSIT,
-					"amount":txn.get("Amount"),
+					"amount":network_points,
 					"user":tagged_user,
-					"network":network_tagging_obj.network,
+					"network":network_obj,
 					"is_bulk_creation":True
 				}
 				txn_obj = Transaction.objects.create_txn(**txn_detail)
@@ -48,15 +52,15 @@ def bulk_txn_create(txn_data):
 				#update user points
 
 				user_points = tagged_user.points
-				user_points["current_month_points"] += int(txn.get("Amount"))
-				user_points["total_points"] += int(txn.get("Amount"))
+				user_points["current_month_points"] += ippa_points
+				user_points["total_points"] += ippa_points
 				tagged_user.points = user_points
 				tagged_user.save()
 
 				#add network specific points
 				NetworkPoints.objects.create_txn(user=tagged_user, 
-								network=network_tagging_obj.network,
-								points=int(txn.get("Amount")),
+								network=network_obj,
+								points=network_points,
 								txn_type=NetworkPoints.DEPOSIT)
 
 				#initiate points notification
