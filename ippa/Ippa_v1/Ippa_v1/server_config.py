@@ -35,3 +35,6 @@ HTTP_PROTOCOL = os.environ.get("HTTP_PROTOCOL")
 
 #Redis detail
 HOST = os.environ.get("HOST")
+
+#Admin To Email
+ADMIN_TO_EMAIL = os.environ.get("ADMIN_TO_EMAIL")

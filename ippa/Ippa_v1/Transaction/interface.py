@@ -63,6 +63,11 @@ def bulk_txn_create(txn_data):
 								points=network_points,
 								txn_type=NetworkPoints.DEPOSIT)
 
+				#Verify network tagging.
+				if network_tagging_obj.status == PlayerTag.PENDING:
+					network_tagging_obj.status = PlayerTag.VERIFIED
+					network_tagging_obj.save()
+
 				#initiate points notification
 				month = txn_date.strftime("%B")
 				update_point_notification_to_user(month, tagged_user)

@@ -3,6 +3,7 @@ import csv
 import pandas as pd
 
 from NotificationEngine.interface import initiate_notification
+from Ippa_v1.server_config import ADMIN_TO_EMAIL
 
 def read_excel_file(file):
 
@@ -52,7 +53,7 @@ def send_offer_redeemed_email_to_admin(notification_key, reward, user, to=[], cc
 			"title":reward.title,
 			"points":reward.goal_points
 		},
-		"to":["noreply@ippa.in"]
+		"to":[ADMIN_TO_EMAIL]
 	}
 
 	try:

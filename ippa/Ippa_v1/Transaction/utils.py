@@ -1,5 +1,6 @@
 from NotificationEngine.interface import initiate_notification
 from Ippa_v1.utils import convert_datetime_to_string
+from Ippa_v1.server_config import ADMIN_TO_EMAIL
 from Transaction.constants import *
 
 
@@ -11,7 +12,7 @@ def send_take_action_on_txn_email_to_admin(notification_key, txn_obj, user, to=[
 			"user_name":user.name,
 			"link":""
 		},
-		"to":[user.email_id]
+		"to":[ADMIN_TO_EMAIL]
 	}
 
 	try:
@@ -44,7 +45,7 @@ def send_bank_acc_add_mail_to_admin(notification_key, bank_acc_obj, user, to=[],
 			"user_name":user.name,
 			"link":""
 		},
-		"to":[user.email_id],
+		"to":[ADMIN_TO_EMAIL],
 	}
 
 	try:

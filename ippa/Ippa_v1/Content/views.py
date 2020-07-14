@@ -369,9 +369,7 @@ class GetRewards(View):
 			rewards = Rewards.objects.filter(
 						status__in=[Rewards.ACTIVE], 
 						network__network_id=network_id,
-						).exclude(deactivate_date__day=today.day,
-									deactivate_date__month=today.month,
-									deactivate_date__year=today.year)
+						deactivate_date__gt=today)
 			reward_details =  Rewards.objects.bulk_serializer(rewards)
 			if is_logged_in:
 				redeemed_rewards = RedeemedRewards.objects.filter(user_id=player_id).values_list('reward_id',flat=True)
@@ -396,7 +394,7 @@ class GetRewards(View):
 						is_active = False
 					if reward["reward_id"] in redeemed_rewards_list:
 						reward["is_redeemed"] = True
-				if today > reward["to_date"]:
+				if reward.get("deactivate_date") and today >= reward["deactivate_date"]:
 					is_active = False
 					reward["status"] = Rewards.EXPIRED
 			self.response["res_str"] = "Rewards details fetch successfully."
@@ -434,16 +432,18 @@ class GetRewardsNetworks(View):
 		reward_data["user_points"] = user_points
 		reward_data["reward_networks"] = list()
 		try:
+			today = datetime.now().replace(tzinfo=pytz.timezone('UTC'))
 			reward_networks = Rewards.objects.filter(
-						status__in=[Rewards.ACTIVE, Rewards.EXPIRED])\
+						status__in=[Rewards.ACTIVE, Rewards.EXPIRED],
+						deactivate_date__gt=today)\
 						.values_list('network__network_id', flat=True)
 			network_list = list(set(reward_networks))
 
-			network_objs = Network.objects.filter(network_id__in=reward_networks)
+			network_objs = Network.objects.filter(network_id__in=network_list)
 			order_no = 2
 			for network in network_objs:
 				network_detail = network.serialize()
-				if network_detail.get("name") == "IPPA":
+				if network_detail.get("name") == "MyPokerGenie":
 					network_detail["order"] = 1
 				else:
 					network_detail["order"] = order_no
