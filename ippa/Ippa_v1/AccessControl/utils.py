@@ -108,7 +108,7 @@ def send_kyc_declined_email_to_user(user, comments, to=[], cc=[]):
 def send_email_verification_link(notification_key, token, user, to=[], cc=[]):
 	from NotificationEngine.interface import initiate_notification
 
-	link = HTTP_PROTOCOL + HOST_FT_URL + "/verify-email/?q=" + token 
+	link = HTTP_PROTOCOL + HOST_FT_URL + "/profile?token=" + token 
 	notification_obj = {
 		"identifier_dict":{
 			"user_name":user.name,

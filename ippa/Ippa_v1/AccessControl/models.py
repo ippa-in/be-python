@@ -92,9 +92,13 @@ class IppaUserManager(models.Manager):
 		user = IppaUser.objects.get(pk=user_id)
 		if action == "APPROVED":
 			user.kyc_status = IppaUser.KYC_APPROVED
+			user.poa_status = IppaUser.KYC_APPROVED
+			user.poi_status = IppaUser.KYC_APPROVED
 			send_kyc_approved_email_to_user(user)
 		elif action == "DECLINED":
 			user.kyc_status = IppaUser.KYC_DECLINED
+			user.poa_status = IppaUser.KYC_DECLINED
+			user.poi_status = IppaUser.KYC_DECLINED
 			send_kyc_declined_email_to_user(user, comments)
 		user.comments = comments
 		user.save()

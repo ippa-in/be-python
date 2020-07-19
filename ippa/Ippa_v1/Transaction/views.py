@@ -39,11 +39,12 @@ class PointsTransactionView(View):
 		params = request.params_dict
 		try:
 			txn_list = list()
-			if user.is_admin:
-				txn_status = params.get("status")
-				txns = Transaction.objects.select_related('user', 'network').filter(status=txn_status)
-			else:
-				txns = Transaction.objects.select_related('user', 'network').filter(user=user)
+			#Admin txn are being served by filter api.
+			# if user.is_admin:
+			# 	txn_status = params.get("status")
+			# 	txns = Transaction.objects.select_related('user', 'network').filter(status=txn_status)
+			# else:
+			txns = Transaction.objects.select_related('user', 'network').filter(user=user)
 			for txn in txns:
 				txn_list.append(txn.serialize())
 			self.response["res_str"] = "Transaction details fetch successfully."
@@ -153,7 +154,7 @@ class BankView(View):
 			bank = Bank.objects.create_bank(params)
 			self.response["res_str"] = "Bank added successfully."
 			self.response["res_data"] = {"bank_id":bank.pk}
-			return send_201(self.response)
+			return send_200(self.response)
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
@@ -201,7 +202,7 @@ class BankAccountView(View):
 				send_bank_acc_add_mail_to_user(USER_BANK_ACC_INFO_MAIL, bank_account, user)
 			self.response["res_str"] = "Bank account added successfully."
 			self.response["res_data"] = {"bank_account_id":bank_account.pk}
-			return send_201(self.response)
+			return send_200(self.response)
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
@@ -230,7 +231,7 @@ class BankAccountView(View):
 				bank_acc.update_bank_acc(params)
 			self.response["res_str"] = "Bank account updated successfully."
 			self.response["res_data"] = {"bank_account_id":bank_acc.pk}
-			return send_201(self.response)
+			return send_200(self.response)
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)

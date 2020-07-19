@@ -31,7 +31,9 @@ class ManageNetwork(View):
 		try:
 			tagged_user_networks_ids = PlayerTag.objects.filter(user=request.user)\
 							.values_list('network_id', flat=True)
-			networks = Network.objects.filter(status="Active").exclude(network_id__in=tagged_user_networks_ids)
+			networks = Network.objects.filter(status="Active").\
+									exclude(network_id__in=tagged_user_networks_ids).\
+									exclude(name="MyPokerGenie")
 			networks_list = list()
 			for network in networks:
 				networks_list.append(network.serialize())

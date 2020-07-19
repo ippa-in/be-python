@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import pytz
+import copy
 from datetime import datetime
 
 from django.shortcuts import render
@@ -18,7 +19,8 @@ from AccessControl.exceptions import ACTION_NOT_ALLOWED
 from Content.models import *
 from Content.utils import (read_excel_file, read_csv_file,
 							send_offer_redeemed_email_to_admin,
-							send_offer_redeemed_email_to_user
+							send_offer_redeemed_email_to_user,
+							processed_file_data
 							) 
 from Content.constants import *
 from Content.exceptions import *
@@ -269,6 +271,8 @@ class PreviewRewards(View):
 				data_dict["data"] = read_excel_file(rewards_file)
 			elif ".csv" in title:
 				data_dict["data"] = read_csv_file(rewards_file)
+
+			data_dict["data"] = processed_file_data(data_dict["data"])
 			self.response["res_str"] = "Rewards fetched successfully."
 			self.response["res_data"] = data_dict
 			return send_200(self.response)
@@ -302,7 +306,7 @@ class ManageRewards(View):
 			reward_obj_list = list()
 			for reward in reward_data:
 
-				network = Network.objects.get(name=reward.get("network_name"))
+				network = Network.objects.get(name=reward.get("network_name"), is_deleted=0)
 				reward_detail = {
 					"title":reward.get("title", ""),
 					"description":reward.get("description", ""),
