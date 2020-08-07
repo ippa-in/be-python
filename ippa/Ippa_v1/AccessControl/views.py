@@ -57,7 +57,7 @@ class SignUp(View):
 			#Send mobile otp.
 			otp = _get_otp()
 			otp_obj = OTP.objects.save_otp(otp, user.player_id)
-			sms_provider = SMSProvider(params.get("mobile_number"))
+			sms_provider = SMSProvider(params.get("mobile_number"), otp)
 			sms_provider._send_sms()
 			#add notification string.
 			NotificationMessage.objects.add_notification_str(NOTIFICATION_STRING_SIGNUP.format(user.name))

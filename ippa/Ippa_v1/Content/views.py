@@ -380,17 +380,19 @@ class GetRewards(View):
 				redeemed_rewards_list = list(redeemed_rewards)
 			for reward in reward_details:
 				if is_logged_in:
-					points_credit_dict = NetworkPoints.objects.filter(created_on__gte=reward["from_date"],
-													created_on__lte=reward["to_date"],
+					points_credit_dict = NetworkPoints.objects.filter(points_earned_date__gte=reward["from_date"],
+													points_earned_date__lte=reward["to_date"],
 													txn_type=NetworkPoints.DEPOSIT,
-													user_id=player_id)\
-													.aggregate(points_cre=Sum('points'))
+													user_id=player_id,
+													network_id=network_id)\
+													.aggregate(points_cre=Sum('converted_points'))
 					points_credit = points_credit_dict.get("points_cre") if points_credit_dict.get("points_cre") else 0
-					points_debit_dict = NetworkPoints.objects.filter(created_on__gte=reward["from_date"],
-													created_on__lte=reward["to_date"],
+					points_debit_dict = NetworkPoints.objects.filter(points_earned_date__gte=reward["from_date"],
+													points_earned_date__lte=reward["to_date"],
 													txn_type=NetworkPoints.WITHDRAW,
-													user_id=player_id)\
-													.aggregate(points_deb=Sum('points'))
+													user_id=player_id,
+													network_id=network_id)\
+													.aggregate(points_deb=Sum('converted_points'))
 					points_debit = points_debit_dict.get("points_deb") if points_debit_dict.get("points_deb") else 0
 					points_earned = points_credit - points_debit if points_credit > points_debit else 0
 					reward["points_earned"] = points_earned
@@ -421,7 +423,6 @@ class GetRewardsNetworks(View):
 		"""
 		return details of reward network
 		"""
-
 		is_logged_in = False
 		user_points = dict()
 		reward_data = dict()
@@ -453,7 +454,7 @@ class GetRewardsNetworks(View):
 					network_detail["order"] = order_no
 					order_no = order_no + 1
 				reward_data["reward_networks"].append(network_detail)
-
+			reward_data["reward_networks"] = sorted(reward_data["reward_networks"], key=lambda reward: int(reward["order"]))
 			self.response["res_str"] = "Rewards Networks details fetch successfully."
 			self.response["res_data"] = reward_data
 			return send_200(self.response)
@@ -483,23 +484,24 @@ class RedeemReward(View):
 														user=user)
 			if redeemed_rewards:
 				raise RewardRedeemed(REWARD_ALREADY_REDEEMEED)
-			points_credit_dict = NetworkPoints.objects.filter(created_on__gte=reward.from_date,
-											created_on__lte=reward.to_date,
+			points_credit_dict = NetworkPoints.objects.filter(points_earned_date__gte=reward.from_date,
+											points_earned_date__lte=reward.to_date,
 											txn_type=NetworkPoints.DEPOSIT)\
-											.aggregate(points_cre=Sum('points'))
+											.aggregate(points_cre=Sum('converted_points'))
 			points_credit = points_credit_dict.get("points_cre")
-			points_debit_dict = NetworkPoints.objects.filter(created_on__gte=reward.from_date,
-											created_on__lte=reward.to_date,
+			points_debit_dict = NetworkPoints.objects.filter(points_earned_date__gte=reward.from_date,
+											points_earned_date__lte=reward.to_date,
 											txn_type=NetworkPoints.WITHDRAW)\
-											.aggregate(points_deb=Sum('points'))
+											.aggregate(points_deb=Sum('converted_points'))
 			points_debit = points_debit_dict.get("points_deb")
 			points_earned = points_credit - points_debit if points_credit > points_debit else 0
 			if not points_earned:
 				raise NotEnoughPoints(LESS_POINTS)
 			NetworkPoints.objects.create_txn(user=request.user, 
 							network=reward.network,
-							points=int(reward.goal_points),
-							txn_type=NetworkPoints.WITHDRAW)
+							original_points=int(reward.goal_points),
+							txn_type=NetworkPoints.WITHDRAW,
+							points_earned_date=datetime.now())
 			redeemed_obj = RedeemedRewards.objects.add_reward_redeemed(reward, user)
 			send_offer_redeemed_email_to_admin(REWARD_ADMIN_MAIL, reward, request.user)
 			send_offer_redeemed_email_to_user(REWARD_USER_MAIL, reward, request.user)

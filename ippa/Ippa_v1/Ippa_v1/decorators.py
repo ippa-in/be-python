@@ -39,7 +39,7 @@ class decorator_4xx(object):
 			request.params_dict = params
 			#check for mandatory params.
 			params_list = params.keys()
-			missing_params = [params for params in self.mand_params if params not in params_list]
+			missing_params = [parameter for parameter in self.mand_params if parameter not in params_list]
 			if missing_params:
 				msg_str = ', '.join(missing_params) + " are mandatory parameters."
 				return HttpResponseBadRequest(msg_str)
@@ -97,7 +97,7 @@ class email_decorator_4xx(object):
 			request.params_dict = params
 			#check for mandatory params.
 			params_list = params.keys()
-			missing_params = [params for params in self.mand_params if params not in params_list]
+			missing_params = [parameter for parameter in self.mand_params if parameter not in params_list]
 			if missing_params:
 				msg_str = ', '.join(missing_params) + " are mandatory parameters."
 				return HttpResponseBadRequest(msg_str)
@@ -145,7 +145,7 @@ class decorator_4xx_admin(object):
 			request.params_dict = params
 			#check for mandatory params.
 			params_list = params.keys()
-			missing_params = [params for params in self.mand_params if params not in params_list]
+			missing_params = [parameter for parameter in self.mand_params if parameter not in params_list]
 			if missing_params:
 				msg_str = ', '.join(missing_params) + " are mandatory parameters."
 				return HttpResponseBadRequest(msg_str)

@@ -104,10 +104,13 @@ class PlayerTag(BaseModel):
 
 class NetworkPointsManager(models.Manager):
 
-	def create_txn(self, user, network, points, txn_type):
+	def create_txn(self, user, network, original_points, txn_type, 
+						points_earned_date, converted_points=None):
 
 		network_point = NetworkPoints.objects.create(user=user, network=network, 
-											points=points, txn_type=txn_type)
+									original_points=original_points, txn_type=txn_type,
+									converted_points=converted_points,
+									points_earned_date=points_earned_date)
 
 class NetworkPoints(BaseModel):
 
@@ -118,8 +121,10 @@ class NetworkPoints(BaseModel):
 
 	user = models.ForeignKey(IppaUser, null=True, blank=True, related_name="user_network_points")
 	network = models.ForeignKey(Network, null=True, blank=True, related_name="user_points_networks")
-	points = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
+	original_points = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
+	converted_points = models.DecimalField(decimal_places=2, max_digits=10, null=True, blank=True)
 	txn_type = models.CharField(max_length=255, default=DEPOSIT, choices=point_type_choices)
+	points_earned_date = models.DateTimeField(null=True, blank=True)
 
 	objects = NetworkPointsManager()
 

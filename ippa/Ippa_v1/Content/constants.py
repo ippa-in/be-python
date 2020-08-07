@@ -844,7 +844,7 @@ CONTENT_COLUMN_MAPPING = {
 		},
 		{
 			"display_name":"Email",
-			"lookup_key":"email_id",
+			"lookup_key":"user.email_id",
 			"key_type":"string",
 			"order":3
 		},

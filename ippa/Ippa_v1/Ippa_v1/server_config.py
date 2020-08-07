@@ -17,6 +17,9 @@ SERVER_DATABASES = {
 #Path configurations
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname( __name__ ), '..'))+'/'
 
+#logs file
+ERROR_LOG_FILE = PROJECT_PATH + 'logs/ippa.log'
+
 #AWS CONFIGURATIONS
 AWS_SECRET_KEY_ID = os.environ.get("AWS_SECRET_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
@@ -38,3 +41,8 @@ HOST = os.environ.get("HOST")
 
 #Admin To Email
 ADMIN_TO_EMAIL = os.environ.get("ADMIN_TO_EMAIL")
+
+#KARIX SMS DETAIL
+KARIX_ACCESS_KEY = os.environ.get("KARIX_ACCESS_KEY")
+KARIX_BASE_URL = os.environ.get("KARIX_BASE_URL")
+SENDER_ID = os.environ.get("SENDER_ID")

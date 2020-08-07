@@ -25,7 +25,6 @@ def bulk_txn_create(txn_data):
 				network_tagging_obj = PlayerTag.objects.filter(network__name=network_name,
 														tag_user_name=network_user_name,
 														is_deleted=False).first()
-
 				if not network_tagging_obj:
 					continue
 					# err_msg = USER_NOT_TAGGED_STR.format(network_user_name, network_name)
@@ -40,7 +39,7 @@ def bulk_txn_create(txn_data):
 				txn_detail = {
 					"txn_date":txn_date,
 					"txn_type":Transaction.DEPOSIT,
-					"amount":network_points,
+					"amount":ippa_points,
 					"user":tagged_user,
 					"network":network_obj,
 					"is_bulk_creation":True
@@ -50,18 +49,19 @@ def bulk_txn_create(txn_data):
 				txn_count = txn_count + 1
 
 				#update user points
-
 				user_points = tagged_user.points
 				user_points["current_month_points"] += ippa_points
 				user_points["total_points"] += ippa_points
 				tagged_user.points = user_points
 				tagged_user.save()
-
 				#add network specific points
 				NetworkPoints.objects.create_txn(user=tagged_user, 
 								network=network_obj,
-								points=network_points,
-								txn_type=NetworkPoints.DEPOSIT)
+								original_points=network_points,
+								txn_type=NetworkPoints.DEPOSIT,
+								converted_points=ippa_points,
+								points_earned_date=txn_date
+								)
 
 				#Verify network tagging.
 				if network_tagging_obj.status == PlayerTag.PENDING:
