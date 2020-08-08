@@ -18,7 +18,7 @@ SERVER_DATABASES = {
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname( __name__ ), '..'))+'/'
 
 #logs file
-ERROR_LOG_FILE = PROJECT_PATH + 'logs/ippa.log'
+ERROR_LOG_FILE = PROJECT_PATH + 'ippa.log'
 
 #AWS CONFIGURATIONS
 AWS_SECRET_KEY_ID = os.environ.get("AWS_SECRET_KEY_ID")
