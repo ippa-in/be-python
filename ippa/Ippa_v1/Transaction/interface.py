@@ -2,7 +2,7 @@ from django.db import transaction
 from datetime import datetime
 
 from Transaction.models import Transaction
-from Network.models import PlayerTag, NetworkPoints
+from Network.models import PlayerTag, NetworkPoints, Network
 from Transaction.exceptions import UserNotTagged, TxnCreationFailed
 from Transaction.constants import USER_NOT_TAGGED_STR
 from Transaction.utils import *
@@ -36,6 +36,7 @@ def bulk_txn_create(txn_data):
 				ippa_points = int(round(float(network_points)*eval(conversion_exp)))
 				tagged_user = network_tagging_obj.user
 				txn_date = datetime.strptime(txn.get("Date"), "%d-%m-%Y")
+				#Create one transaction for the network.
 				txn_detail = {
 					"txn_date":txn_date,
 					"txn_type":Transaction.DEPOSIT,
@@ -47,6 +48,19 @@ def bulk_txn_create(txn_data):
 				txn_obj = Transaction.objects.create_txn(**txn_detail)
 				txn_obj_list.append(txn_obj)
 				txn_count = txn_count + 1
+
+				#Create transaction for MPG.
+				mpg_network = Network.objects.get(name="MyPokerGenie")
+				txn_detail = {
+					"txn_date":txn_date,
+					"txn_type":Transaction.DEPOSIT,
+					"amount":ippa_points,
+					"user":tagged_user,
+					"network":mpg_network,
+					"is_bulk_creation":True
+				}
+				txn_obj = Transaction.objects.create_txn(**txn_detail)
+				txn_obj_list.append(txn_obj)
 
 				#update user points
 				user_points = tagged_user.points

@@ -74,7 +74,8 @@ class NetworkTagging(View):
 		try:
 			tagging_list = PlayerTag.objects.filter((Q(status="Pending") 
 													|Q(status="Verified")),
-													user=request.user)
+													user=request.user,
+													network__is_deleted=0)
 			tagging_res = list()
 			for tagging in tagging_list:
 				tagging_res.append(tagging.serialize())
