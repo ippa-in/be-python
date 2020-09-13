@@ -7,6 +7,7 @@ from django.http import QueryDict
 
 from AccessControl.models import IppaUser
 from .redis_utils import set_expire_time, is_token_exists
+from .constants import LOGIN_NOT_REQUIRED_CONTENT_TYPE
 
 class decorator_4xx(object):
 
@@ -50,7 +51,7 @@ class decorator_4xx(object):
 			#For some content type no login is required Ex: tournament_content.
 			#Skipping below checks for those content_type
 			content_type = params.get("display_name")
-			if token or not content_type in ["tournament_content"]:
+			if token or not content_type in LOGIN_NOT_REQUIRED_CONTENT_TYPE:
 				try:
 					user = IppaUser.objects.get(player_id=player_id, is_deleted=0)
 				except IppaUser.DoesNotExist:

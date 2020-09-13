@@ -61,7 +61,7 @@ class BankAccountManager(models.Manager):
 		bank_acc = self.create(**bank_acc_details)
 		return bank_acc
 
-	def bulk_serializer(self, queryset):
+	def bulk_serializer(self, queryset, is_logged_in=False):
 
 		bank_acc_data = []
 		for obj in queryset:
@@ -173,7 +173,7 @@ class TransactionManager(models.Manager):
 			txn_obj = self.create(**txn_details)
 		return txn_obj
 
-	def bulk_serializer(self, queryset):
+	def bulk_serializer(self, queryset, is_logged_in=False):
 
 		txn_data = []
 		for obj in queryset:

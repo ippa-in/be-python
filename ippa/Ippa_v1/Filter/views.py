@@ -7,6 +7,7 @@ from django.views.generic import View
 from Ippa_v1.responses import *
 from .models import SearchConfiguration, SearchField
 from .utils import get_foreign_keys
+from Ippa_v1.redis_utils import is_token_exists
 from Ippa_v1.decorators import decorator_4xx
 from Content.constants import CONTENT_COLUMN_MAPPING
 
@@ -71,6 +72,11 @@ class FilterView(View):
 		data_type = params.get("data_type")
 		pre_query = json.loads(params.get("query", str(dict())))
 		pre_sort = json.loads(params.get("sort_query", str(list())))
+
+		is_logged_in = False
+		login_token = request.META.get("HTTP_PLAYER_TOKEN")
+		if login_token and is_token_exists(login_token):
+			is_logged_in = True
 		try:
 			search_config = SearchConfiguration.objects.get(display_name=params.get("display_name"))
 			content_type = search_config.content_type
@@ -101,7 +107,7 @@ class FilterView(View):
 						filter_dict[field_name] = filter_values.get("date")
 				#Apply User Filter
 				user_search_field = SearchField.objects.filter(is_user_filter=True, status=True, search_config=search_config)
-				if user_search_field:
+				if user_search_field and is_logged_in:
 					filter_dict["user"] = request.user
 				filter_dict["is_deleted"] = False
 				filter_query_set = model.objects.select_related(*select_related_fields).filter(**filter_dict)
@@ -133,7 +139,7 @@ class FilterView(View):
 			if data_type == "all":
 				filter_sorted_query_set = filter_sorted_query_set.order_by(*pre_sort)
 			#Return serialized response.
-			filter_sorted_query_data = model.objects.bulk_serializer(filter_sorted_query_set)
+			filter_sorted_query_data = model.objects.bulk_serializer(filter_sorted_query_set, is_logged_in)
 			self.response["res_str"] = "Data fetched successfully."
 			self.response["res_data"] = filter_sorted_query_data
 			return send_201(self.response)

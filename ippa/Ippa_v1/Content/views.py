@@ -27,6 +27,7 @@ from Content.exceptions import *
 from Content.interface import bulk_tournament_create
 from Network.models import NetworkPoints
 from Transaction.interface import bulk_txn_create
+from Filter.models import SearchConfiguration
 
 # Create your views here.
 class DashboardImage(View):
@@ -688,6 +689,194 @@ class PromotionView(View):
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
 			return send_400(self.response)
+
+class UploadFileToS3(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx_admin(["file_type"])
+	def post(self, request, *args, **kwargs):
+		user = request.user
+		file = request.FILES.get("file")
+		file_type = request.POST.get("file_type")
+		try:
+			if not file:
+				raise Exception("No file passed.")
+			#Upload file to s3
+			file.seek(0)
+			file_name = generate_unique_id("file_type")
+			file_s3_url = copy_content_to_s3(file, "file_type/"+file_name)
+			self.response["res_str"] = file_type + " Added Successfully."
+			self.response["res_data"] = {"s3_url":file_s3_url}
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class VideoView(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx_admin([])
+	def post(self, request, *args, **kwargs):
+		user = request.user
+		params_dict = request.params_dict
+		video_id = params_dict.get("video_id")
+		action = params_dict.get("action", "")
+		response_str = ""
+		try:
+			if not video_id:
+				video_obj = Videos.objects.add_video(params_dict, user)
+				response_str = "Video Added Successfully."
+			else:
+				video_obj = Videos.objects.get(is_deleted=0, video_id=video_id)
+				if action == "update":
+					video_obj.update_video(params_dict)
+				elif action == "delete":
+					video_obj.update(is_deleted=True)
+				response_str = "Video Updated Successfully."
+			self.response["res_str"] = response_str
+			self.response["res_data"] = {"video_id":video_obj.pk}
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+
+	def get(self, request, *args, **kwargs):
+		"""
+		return details of video.
+		"""
+		params = request.GET
+		is_logged_in = False
+		login_token = request.META.get("HTTP_PLAYER_TOKEN")
+		if login_token and is_token_exists(login_token):
+			is_logged_in = True
+			player_id = request.META.get("HTTP_PLAYER_ID")
+		try:
+			video_id = params.get("video_id")
+			video_obj = Videos.objects.get(video_id=video_id)
+			data = video_obj.serialize()
+			permission = data.get("permission")
+			if not is_logged_in:
+				if permission != Videos.ALL_USERS:
+					raise Exception("Log In Required to see content.")
+			#Get Trending Videos
+			tredning_videos_list = Videos.objects.filter(is_deleted=False).order_by('-views_count')
+			trending_videos_list_top_ten = tredning_videos_list.values_list('video_id', flat=True)[:10]
+			if video_id in trending_videos_list_top_ten:
+				data['is_trending'] = True
+			#Get Related Videos.
+			related_videos = Videos.objects.filter(tags__overlap=data.get("tags", list()))
+			data["related_videos"] = Videos.objects.bulk_serializer(related_videos, is_logged_in)
+			#Check whether video has been upvoted by current user.
+			activity_obj = video_obj.upvotes.filter(posted_by__player_id=player_id)
+			data["is_upvoted_by_user"] = True if activity_obj else False
+			# else:
+			# 	if permission == Videos.PREMIUM_USERS and not user.is_premium:
+			# 		raise Exception("Premium Plan Required to see content.")
+			self.response["res_str"] = "Video details fetch successfully."
+			self.response["res_data"] = data
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class ActivityView(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx(['content_id', 'display_name'])
+	def post(self, request, *args, **kwargs):
+		user = request.user
+		params_dict = request.params_dict
+		content_id = params_dict.get("content_id")
+		display_name = params_dict.get("display_name")
+		try:
+			search_config = SearchConfiguration.objects.get(display_name=display_name)
+			content_type = search_config.content_type
+			model_type = content_type.model_class()
+			content_object = model_type.objects.get(pk=content_id) 
+			content_object.upvote_count += 1
+			content_object.save()
+			#add upvote
+			Activity.objects.add_activity(user, content_object)
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class CommentsView(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx(['content_id', 'comment', 'display_name'])
+	def post(self, request, *args, **kwargs):
+		user = request.user
+		params_dict = request.params_dict
+		content_id = params_dict.get("content_id")
+		comment = params_dict.get("comment")
+		display_name = params_dict.get("display_name")
+		try:
+			search_config = SearchConfiguration.objects.get(display_name=display_name)
+			content_type = search_config.content_type
+			model_type = content_type.model_class()
+			content_object = model_type.objects.get(pk=content_id) 
+			
+			#add comment
+			Comments.objects.add_comments(user, comment, content_object)
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+	@decorator_4xx(['content_id'])
+	def get(self, request, *args, **kwargs):
+		params_dict = request.params_dict
+		content_id = params_dict.get("content_id")
+		display_name = params_dict.get("display_name")
+		try:
+			sc = SearchConfiguration.objects.get(display_name=display_name)
+			ct = sc.content_type
+			comments = Comments.objects.filter(content_type=ct, object_id=content_id)
+			#Comment content type
+			comment_sc =  SearchConfiguration.objects.get(display_name="comments")
+			comment_ct = comment_sc.content_type
+			comments_list = list()
+			for comment in comments:
+				comment_data = comment.serialize()
+				replies_count = Comments.objects.filter(content_type=comment_ct, 
+										object_id=comment_data.get("comment_id")).\
+										count()
+				if replies_count:
+					comment_data["replies_count"] = replies_count
+				comments_list.append(comment.serialize())
+
+			self.response["res_data"] = comments_list
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+
+
+
 
 
 

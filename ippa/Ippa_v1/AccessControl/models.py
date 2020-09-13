@@ -78,7 +78,7 @@ class IppaUserManager(models.Manager):
 			ippa_user = IppaUser.objects.create(**user_data_set)
 		return ippa_user
 
-	def bulk_serializer(self, queryset):
+	def bulk_serializer(self, queryset, is_logged_in=False):
 
 		user_data = []
 		for obj in queryset:

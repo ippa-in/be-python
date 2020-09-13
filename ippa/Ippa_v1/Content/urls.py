@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from Content.views import (GetNavigationBar, DashboardImage, UpdateDashboardImage,
 							PreviewPoints, ManagePoints, PreviewRewards, ManageRewards,
 							GetRewardsNetworks, RedeemReward, GetRewards, AdView,
-							PromotionView)
+							PromotionView, VideoView, ActivityView, CommentsView)
 
 
 urlpatterns = [
@@ -20,4 +20,7 @@ urlpatterns = [
 	url(r'^v1/redeem/$', csrf_exempt(RedeemReward.as_view()), name="Content_redeem_reward"),
 	url(r'^v1/promo_images/$', csrf_exempt(AdView.as_view()), name="Content_ads"),
 	url(r'^v1/promotions/$', csrf_exempt(PromotionView.as_view()), name="Content_ads"),
+	url(r'^v1/videos/$', csrf_exempt(VideoView.as_view()), name="Content_videos"),
+	url(r'^v1/activity/$', csrf_exempt(ActivityView.as_view()), name="Content_acitivity"),
+	url(r'^v1/comment/$', csrf_exempt(CommentsView.as_view()), name="Content_comments"),
 ]

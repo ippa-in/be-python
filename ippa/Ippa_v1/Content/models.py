@@ -4,6 +4,9 @@ from __future__ import unicode_literals
 import json
 from django.db import models
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericRelation
 
 from Ippa_v1.utils import *
 from Network.models import Network
@@ -31,7 +34,7 @@ class DashBoardImageManager(models.Manager):
 											img_url=img_url, order=img_order_new)
 		return image
 
-	def bulk_serializer(self, queryset):
+	def bulk_serializer(self, queryset, is_logged_in):
 
 		image_data = []
 		for obj in queryset:
@@ -81,7 +84,7 @@ class AdManager(models.Manager):
 									order=ad_order_new)
 		return ad_obj
 
-	def bulk_serializer(self, queryset):
+	def bulk_serializer(self, queryset, is_logged_in):
 
 		ad_data = []
 		for obj in queryset:
@@ -116,7 +119,7 @@ class PointsManager(models.Manager):
 		file = Points.objects.create(title=title, total_records=no_of_rows, file_url=file_url)
 		return file
 
-	def bulk_serializer(self, queryset):
+	def bulk_serializer(self, queryset, is_logged_in):
 
 		points_data = []
 		for obj in queryset:
@@ -156,7 +159,7 @@ class Points(BaseModel):
 
 class RewardsManager(models.Manager):
 
-	def bulk_serializer(self, queryset):
+	def bulk_serializer(self, queryset, is_logged_in):
 
 		rewards_data = []
 		for obj in queryset:
@@ -343,7 +346,7 @@ class TournamentsManager(models.Manager):
 		tournament_obj = Tournaments(**tournament_detail)
 		return tournament_obj
 
-	def bulk_serializer(self, queryset):
+	def bulk_serializer(self, queryset, is_logged_in):
 
 		tournament_data = []
 		for obj in queryset:
@@ -371,3 +374,154 @@ class Tournaments(BaseModel):
 		tournament_data["guaranteed"] = self.guaranteed
 		tournament_data["network_name"] = self.network_name
 		return tournament_data
+
+class ActivityManager(models.Manager):
+
+	def add_activity(self, user, content_obj):
+
+		activity_obj = Activity.objects.create(activity="U", posted_by=user,
+												content_object=content_obj)
+
+class Activity(BaseModel):
+
+	UPVOTE = 'U'
+	activity_choices = ((UPVOTE, 'Upvote'),)
+
+	posted_by = models.ForeignKey(IppaUser, null=True, blank=True)
+	activity = models.CharField(max_length=1, choices=activity_choices)
+	content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+	object_id = models.CharField(max_length=255)
+	content_object = GenericForeignKey()
+
+	objects = ActivityManager()
+
+class VideosManger(models.Manager):
+
+	def add_video(self, params, user):
+
+		video_obj = Videos.objects.create(
+							video_id=generate_unique_id("VID"),
+							title=params.get("title"),
+							description = params.get("description"),
+							is_featured=params.get("is_featured"),
+							permission=params.get("permission"),
+							video_url=params.get("video_url"),
+							posted_by=user,
+							thumbnail_img_link= params.get("thumbnail_img_link"),
+							game_type=json.loads(params.get("game_type", list())),
+							skill_level=json.loads(params.get("skill_level", list())),
+							tags=json.loads(params.get("tags", list()))
+							)
+		return video_obj
+
+	def bulk_serializer(self, queryset, is_logged_in):
+
+		video_data = []
+		for obj in queryset:
+			video_dict = obj.serialize()
+			if is_logged_in and video_dict.get("permission") != Videos.ALL_USERS:
+				video_dict.pop("video_url")
+			video_data.append(video_dict)
+		return video_data
+
+class Videos(BaseModel):
+
+	ALL_USERS = 0
+	LOGGED_IN_USERS = 1
+	PREMIUM_USERS = 2
+	permission_choices = ((ALL_USERS, "ALL USERS"),
+					(LOGGED_IN_USERS, "LOGGED IN USERS"),
+					(PREMIUM_USERS, "PREMIUM USERS"))
+
+	video_id = models.CharField(max_length=255, primary_key=True)
+	title = models.CharField(max_length=255, blank=True, null=True)
+	description = models.TextField(null=True, blank=True)
+	video_url = models.TextField(null=True, blank=True)
+	thumbnail_img_link = models.TextField(null=True, blank=True)
+	posted_by = models.ForeignKey(IppaUser, null=True, blank=True)
+	game_type = ArrayField(models.CharField(blank=True, max_length=255), blank=True, null=True, default=list())
+	skill_level = ArrayField(models.CharField(blank=True, max_length=255), blank=True, null=True, default=list())
+	tags = ArrayField(models.CharField(blank=True, max_length=255), blank=True, null=True, default=list())
+	views_count = models.IntegerField(default=0)
+	is_featured = models.BooleanField(default=False)
+	permission = models.IntegerField(default=ALL_USERS, choices=permission_choices)
+	upvote_count = models.IntegerField(default=0)
+	upvotes = GenericRelation(Activity, related_query_name='video')
+	objects = VideosManger()
+
+	def __unicode__(self):
+		return str(self.video_id)
+
+	def serialize(self):
+		video_data = dict()
+		video_data["video_id"] = self.video_id
+		video_data["title"] = self.title
+		video_data["description"] = self.description
+		video_data["video_url"] = self.video_url
+		video_data["game_type"] = self.game_type
+		video_data["skill_level"] = self.skill_level
+		video_data["tags"] = self.tags
+		video_data["views_count"] = self.views_count
+		video_data["is_featured"] = self.is_featured
+		video_data["permission"] = self.permission
+		video_data["upvote_count"] = self.upvote_count
+		video_data["posted_on"] = self.created_on.strftime("%d.%m.%Y")
+		video_data["posted_by"] = {"name":self.posted_by.name, "profile_pic_link":self.posted_by.profile_image}
+		return video_data
+
+	def update_video(self, data):
+		for key, value in data.iteritems():
+			if key == "title" and value:
+				self.title = value
+			if key == "description" and value:
+				self.description = value
+			if key == "video_url" and value:
+				self.video_url = value
+			if key == "game_type" and value:
+				self.game_type = json.loads(value)
+			if key == "skill_level" and value:
+				self.skill_level = json.loads(value)
+			if key == "tags" and value:
+				self.tags = json.loads(value)
+			if key == "is_featured" and value:
+				self.is_featured = value
+			if key == "permission" and value:
+				self.permission = value
+		self.save()
+
+class CommentsManager(models.Manager):
+
+	def add_comments(self, user, comment, content_obj):
+
+		comment_obj = Comments.objects.create(posted_by=user, 
+											comment=comment,
+											content_object=content_obj)
+
+class Comments(BaseModel):
+
+	comment = models.TextField(blank=True)
+	content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+	object_id = models.CharField(max_length=255)
+	posted_by = models.ForeignKey(IppaUser, null=True, blank=True) 
+	content_object = GenericForeignKey()
+	upvotes = GenericRelation(Activity, related_query_name='comments')
+
+	objects = CommentsManager()
+
+	def __unicode__(self):
+		return str(self.pk)
+
+	def serialize(self):
+
+		comment_data = dict()
+		comment_data["comment_id"] = self.pk
+		comment_data["comment"] = self.comment
+		comment_data["upvotes"] = self.upvotes.count()
+		comment_data["posted_on"] = self.created_on.strftime("%-M") + " min"
+		comment_data["posted_by"] = {"name":self.posted_by.name, "profile_pic_link":self.posted_by.profile_image}
+		return comment_data
+
+
+
+
+
