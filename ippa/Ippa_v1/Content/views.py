@@ -708,8 +708,8 @@ class UploadFileToS3(View):
 				raise Exception("No file passed.")
 			#Upload file to s3
 			file.seek(0)
-			file_name = generate_unique_id("file_type")
-			file_s3_url = copy_content_to_s3(file, "file_type/"+file_name)
+			file_name = generate_unique_id(file_type)
+			file_s3_url = copy_content_to_s3(file, file_type+"/"+file_name)
 			self.response["res_str"] = file_type + " Added Successfully."
 			self.response["res_data"] = {"s3_url":file_s3_url}
 			return send_200(self.response)

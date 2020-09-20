@@ -4,7 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 from Content.views import (GetNavigationBar, DashboardImage, UpdateDashboardImage,
 							PreviewPoints, ManagePoints, PreviewRewards, ManageRewards,
 							GetRewardsNetworks, RedeemReward, GetRewards, AdView,
-							PromotionView, VideoView, ActivityView, CommentsView)
+							PromotionView, VideoView, ActivityView, CommentsView,
+							UploadFileToS3)
 
 
 urlpatterns = [
@@ -23,4 +24,5 @@ urlpatterns = [
 	url(r'^v1/videos/$', csrf_exempt(VideoView.as_view()), name="Content_videos"),
 	url(r'^v1/activity/$', csrf_exempt(ActivityView.as_view()), name="Content_acitivity"),
 	url(r'^v1/comment/$', csrf_exempt(CommentsView.as_view()), name="Content_comments"),
+	url(r'^v1/upload_content/$', csrf_exempt(UploadFileToS3.as_view()), name="Content_upload_file"),
 ]

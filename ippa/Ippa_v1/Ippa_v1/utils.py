@@ -28,9 +28,18 @@ def copy_content_to_s3(file, key):
 	if ext == ".svg":
 		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
 							Key=key, ContentType='image/svg+xml')
-	elif ext == ".png" or ext == ".jpg" or ".jpeg":
+	elif ext in [".png", ".jpg", ".jpeg"]:
 		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
 							Key=key, ContentType='image/jpeg')
+	elif ext == ".avi":
+		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
+							Key=key, ContentType='video/avi')
+	elif ext == ".mov":
+		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
+							Key=key, ContentType='video/quicktime')
+	elif ext == ".mpg":
+		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
+							Key=key, ContentType='video/mpeg')
 	else:
 		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME, Key=key)
 
