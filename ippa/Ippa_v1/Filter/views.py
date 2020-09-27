@@ -72,7 +72,6 @@ class FilterView(View):
 		data_type = params.get("data_type")
 		pre_query = json.loads(params.get("query", str(dict())))
 		pre_sort = json.loads(params.get("sort_query", str(list())))
-
 		is_logged_in = False
 		login_token = request.META.get("HTTP_PLAYER_TOKEN")
 		if login_token and is_token_exists(login_token):
@@ -105,6 +104,8 @@ class FilterView(View):
 						filter_dict[field_name+"__in"] = filter_values.get("dropdown_values")
 					if filter_type == "date":
 						filter_dict[field_name] = filter_values.get("date")
+					if filter_type == "multiselectdropdown":
+						filter_dict[field_name+"__overlap"] = filter_values.get("dropdown_values")
 				#Apply User Filter
 				user_search_field = SearchField.objects.filter(is_user_filter=True, status=True, search_config=search_config)
 				if user_search_field and is_logged_in:

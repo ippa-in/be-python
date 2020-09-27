@@ -60,7 +60,7 @@ class SearchField(BaseModel):
 		field_data["display_name"] = self.display_name
 		field_data["filter_type"] = self.filter_type
 		field_data["field_name"] = self.field_name
-		if self.filter_type == "dropdown":
+		if self.filter_type in ["dropdown", "multiselectdropdown"]:
 			field_data["values"] = self.values.split(',')
 		else:
 			field_data["values"] = list()
