@@ -29,7 +29,8 @@ RUN apt-get install -y --no-install-recommends \
         python-dev \
         python-pip \
         python-setuptools \
-        libpq-dev
+        libpq-dev \
+        python-opencv
 
 RUN apt-get install -y --no-install-recommends postgresql postgresql-contrib
 

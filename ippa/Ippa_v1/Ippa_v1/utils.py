@@ -17,11 +17,12 @@ def generate_unique_id(key):
 			+ str(dt.microsecond) + str(rand_four_digit())
 			+ "IPPA")
 
-def copy_content_to_s3(file, key):
+def copy_content_to_s3(file, key, ext=""):
 
 	file_s3_url = S3_URL + "/" + key
 	#extension of file
-	file_name, ext = os.path.splitext(file.name)
+	if not ext:
+		file_name, ext = os.path.splitext(file.name)
 
 	client = boto3.client('s3', aws_access_key_id=AWS_SECRET_KEY_ID,
 								aws_secret_access_key=AWS_SECRET_ACCESS_KEY)

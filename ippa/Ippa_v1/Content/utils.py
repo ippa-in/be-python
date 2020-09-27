@@ -1,5 +1,6 @@
 import os
 import csv
+import cv2
 import copy
 import pandas as pd
 import numpy as np
@@ -89,6 +90,25 @@ def send_offer_redeemed_email_to_user(notification_key, reward, user, to=[], cc=
 		initiate_notification(notification_key, notification_obj)
 	except Exception as ex:
 		pass
+
+def generate_thumbnail(file):
+	#extension of file
+	content = ""
+	file_name, ext = os.path.splitext(file.name)
+	file_path = file_name + ext
+	with open(file_path, 'w') as f:
+		f.write(file.read())
+	cam = cv2.VideoCapture(file_path)
+	ret,frame = cam.read()
+	cv2.imwrite(file_name + "thumbnail.jpg", frame)
+	with open(file_name+"thumbnail.jpg", "rb") as f:
+		content = f.read()
+	os.remove(file_name + "thumbnail.jpg")
+	return content
+
+
+
+
 		
 
 

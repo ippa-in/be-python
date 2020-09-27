@@ -20,7 +20,7 @@ from Content.models import *
 from Content.utils import (read_excel_file, read_csv_file,
 							send_offer_redeemed_email_to_admin,
 							send_offer_redeemed_email_to_user,
-							processed_file_data
+							processed_file_data, generate_thumbnail
 							) 
 from Content.constants import *
 from Content.exceptions import *
@@ -703,6 +703,7 @@ class UploadFileToS3(View):
 		user = request.user
 		file = request.FILES.get("file")
 		file_type = request.POST.get("file_type")
+		url_data = dict()
 		try:
 			if not file:
 				raise Exception("No file passed.")
@@ -710,8 +711,15 @@ class UploadFileToS3(View):
 			file.seek(0)
 			file_name = generate_unique_id(file_type)
 			file_s3_url = copy_content_to_s3(file, file_type+"/"+file_name)
+			url_data["s3_url"] = file_s3_url
+			if file_type == 'Video':
+				file.seek(0)
+				thumbnail_img = generate_thumbnail(file)
+				file_name = generate_unique_id("TMBNL")
+				thumbnail_s3_url = copy_content_to_s3(thumbnail_img, "TMBNL"+"/"+file_name, ".jpg")
+				url_data["thumbnail_s3_url"] = thumbnail_s3_url
 			self.response["res_str"] = file_type + " Added Successfully."
-			self.response["res_data"] = {"s3_url":file_s3_url}
+			self.response["res_data"] = url_data
 			return send_200(self.response)
 		except Exception as ex:
 			self.response["res_str"] = str(ex)
