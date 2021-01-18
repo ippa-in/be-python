@@ -295,10 +295,22 @@ NAVIGATION_BAR = [
 				"sort_key":["order"],
 				"tertiary_segment":None
 			},
-
+			{
+				"name":"Videos",
+				"content_type":VIDEOS_SEGMENT,
+				"order":"4",
+				"is_default":False,
+				"filter_query":{
+					"limit":50,
+					"offset":0,
+					"data_type":"all"
+				},
+				"sort_key":[],
+				"tertiary_segment":None
+			}
 		],
-		"order":"3",
-		"is_default":False
+		"order":"8",
+		"is_default":True
 
 	},
 	{
@@ -384,28 +396,7 @@ NAVIGATION_BAR = [
 		"order":"7",
 		"is_default":False
 
-	},
-	{
-		"segment":"Videos",
-		"sub_segment":[
-			{
-				"name":None,
-				"content_type":VIDEOS_SEGMENT,
-				"order":"1",
-				"is_default":False,
-				"filter_query":{
-					"limit":50,
-					"offset":0,
-					"data_type":"all"
-				},
-				"sort_key":[],
-				"tertiary_segment":None
-			}
-		],
-		"order":"8",
-		"is_default":True
-
-	},
+	}
 ]
 
 #Mapping of columns and keys how to get from filter data

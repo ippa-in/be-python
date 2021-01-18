@@ -403,14 +403,14 @@ class VideosManger(models.Manager):
 							video_id=generate_unique_id("VID"),
 							title=params.get("title"),
 							description = params.get("description"),
-							is_featured=params.get("is_featured"),
+							is_featured=True if params.get("is_featured") == "true" else False,
 							permission=params.get("permission"),
 							video_url=params.get("video_url"),
 							posted_by=user,
 							thumbnail_img_link= params.get("thumbnail_img_link"),
-							game_type=json.loads(params.get("game_type", list())),
-							skill_level=json.loads(params.get("skill_level", list())),
-							tags=json.loads(params.get("tags", list()))
+							game_type=params.get("game_type", list()).split(","),
+							skill_level=params.get("skill_level", list()).split(","),
+							tags=params.get("tags", list()).split(",")
 							)
 		return video_obj
 
@@ -458,6 +458,7 @@ class Videos(BaseModel):
 		video_data["title"] = self.title
 		video_data["description"] = self.description
 		video_data["video_url"] = self.video_url
+		video_data["thumbnail_img_link"] = self.thumbnail_img_link
 		video_data["game_type"] = self.game_type
 		video_data["skill_level"] = self.skill_level
 		video_data["tags"] = self.tags
