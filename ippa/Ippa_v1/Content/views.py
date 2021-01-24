@@ -749,7 +749,8 @@ class VideoView(View):
 				if action == "update":
 					video_obj.update_video(params_dict)
 				elif action == "delete":
-					video_obj.update(is_deleted=True)
+					video_obj.is_deleted = True
+					video_obj.save()
 				response_str = "Video Updated Successfully."
 			self.response["res_str"] = response_str
 			self.response["res_data"] = {"video_id":video_obj.pk}
