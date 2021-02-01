@@ -41,6 +41,9 @@ def copy_content_to_s3(file, key, ext=""):
 	elif ext == ".mpg":
 		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
 							Key=key, ContentType='video/mpeg')
+	elif ext == ".mp4":
+		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME,
+							Key=key, ContentType='video/mp4')
 	else:
 		client.put_object(ACL='public-read', Body=file, Bucket=S3_BUCKET_NAME, Key=key)
 
