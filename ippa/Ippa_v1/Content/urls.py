@@ -5,7 +5,7 @@ from Content.views import (GetNavigationBar, DashboardImage, UpdateDashboardImag
 							PreviewPoints, ManagePoints, PreviewRewards, ManageRewards,
 							GetRewardsNetworks, RedeemReward, GetRewards, AdView,
 							PromotionView, VideoView, ActivityView, CommentsView,
-							UploadFileToS3)
+							UploadFileToS3, ArticleView, ArticleGroupView)
 
 
 urlpatterns = [
@@ -25,4 +25,6 @@ urlpatterns = [
 	url(r'^v1/activity/$', csrf_exempt(ActivityView.as_view()), name="Content_acitivity"),
 	url(r'^v1/comment/$', csrf_exempt(CommentsView.as_view()), name="Content_comments"),
 	url(r'^v1/upload_content/$', csrf_exempt(UploadFileToS3.as_view()), name="Content_upload_file"),
+	url(r'^v1/article/$', csrf_exempt(ArticleView.as_view()), name="Content_articles"),
+	url(r'^v1/article_group/$', csrf_exempt(ArticleGroupView.as_view()), name="Content_articles_group"),
 ]

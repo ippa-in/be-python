@@ -789,6 +789,8 @@ class VideoView(View):
 			#Check whether video has been upvoted by current user.
 			activity_obj = video_obj.upvotes.filter(posted_by__player_id=player_id)
 			data["is_upvoted_by_user"] = True if activity_obj else False
+			#Total Upvotes for the video
+			data["no_of_likes"] = video_obj.upvotes.all().count()
 			# else:
 			# 	if permission == Videos.PREMIUM_USERS and not user.is_premium:
 			# 		raise Exception("Premium Plan Required to see content.")
@@ -884,7 +886,108 @@ class CommentsView(View):
 			return send_400(self.response)
 
 
+class ArticleView(View):
 
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx_admin([])
+	def post(self, request, *args, **kwargs):
+		user = request.user
+		params_dict = request.params_dict
+		article_id = params_dict.get("article_id")
+		action = params_dict.get("action", "")
+		response_str = ""
+		try:
+			if not article_id:
+				article_obj = Article.objects.add_article(params_dict, user)
+				response_str = "Article Added Successfully."
+			else:
+				article_obj = Article.objects.get(is_deleted=0, article_id=article_id)
+				if action == "update":
+					article_obj.update_video(params_dict)
+				elif action == "delete":
+					article_obj.is_deleted = True
+					article_obj.save()
+				response_str = "Article Updated Successfully."
+			self.response["res_str"] = response_str
+			self.response["res_data"] = {"article_id":article_obj.pk}
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+
+	def get(self, request, *args, **kwargs):
+		"""
+		return details of article.
+		"""
+		params = request.GET
+		is_logged_in = False
+		login_token = request.META.get("HTTP_PLAYER_TOKEN")
+		if login_token and is_token_exists(login_token):
+			is_logged_in = True
+			player_id = request.META.get("HTTP_PLAYER_ID")
+		try:
+			article_id = params.get("article_id")
+			article_obj = Article.objects.get(article_id=article_id)
+			data = article_obj.serialize()
+			
+			#Get Trending Article
+			tredning_article_list = Article.objects.filter(is_deleted=False).order_by('-views_count')
+			trending_article_list_top_ten = tredning_article_list.values_list('article_id', flat=True)[:10]
+			if article_id in trending_article_list_top_ten:
+				data['is_trending'] = True
+			#Get Related Article.
+			related_article = Article.objects.filter(tags__overlap=data.get("tags", list()))
+			data["related_Article"] = Article.objects.bulk_serializer(related_article, is_logged_in)
+			#Check whether video has been upvoted by current user.
+			activity_obj = article_obj.upvotes.filter(posted_by__player_id=player_id)
+			data["is_upvoted_by_user"] = True if activity_obj else False
+			
+			self.response["res_str"] = "Article details fetch successfully."
+			self.response["res_data"] = data
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
+
+class ArticleGroupView(View):
+
+	def __init__(self):
+		self.response = init_response()
+
+	def dispatch(self, *args, **kwargs):
+		return super(self.__class__, self).dispatch(*args, **kwargs)
+
+	@decorator_4xx_admin([])
+	def post(self, request, *args, **kwargs):
+		user = request.user
+		params_dict = request.params_dict
+		group_id = params_dict.get("group_id")
+		action = params_dict.get("action", "")
+		response_str = ""
+		try:
+			if not group_id:
+				group_obj = ArticleGroup.objects.add_group(params_dict, user)
+				response_str = "Article Group Added Successfully."
+			else:
+				group_obj = ArticleGroup.objects.get(is_deleted=0, group_id=group_id)
+				if action == "update":
+					group_obj.update_group(params_dict)
+				elif action == "delete":
+					group_obj.is_deleted = True
+					group_obj.save()
+				response_str = "Group Updated Successfully."
+			self.response["res_str"] = response_str
+			self.response["res_data"] = {"group_id":group_obj.pk}
+			return send_200(self.response)
+		except Exception as ex:
+			self.response["res_str"] = str(ex)
+			return send_400(self.response)
 
 
 

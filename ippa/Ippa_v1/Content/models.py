@@ -522,7 +522,151 @@ class Comments(BaseModel):
 		comment_data["posted_by"] = {"name":self.posted_by.name, "profile_pic_link":self.posted_by.profile_image}
 		return comment_data
 
+class ArticleManager(models.Manager):
 
+	def add_article(self, params, user):
 
+		article_obj = Article.objects.create(
+						article_id=generate_unique_id("ARTI"),
+						title=params.get("title"),
+						description = params.get("description"),
+						is_featured=True if params.get("is_featured") == "true" else False,
+						context=params.get("context"),
+						posted_by=user,
+						thumbnail_img_link= params.get("thumbnail_img_link"),
+						tags=params.get("tags", list()).split(","),
+						doc_type=params.get("doc_type")
+						)
+		return article_obj
 
+	def update_article(self, data):
+		for key, value in data.iteritems():
+			if key == "title" and value:
+				self.title = value
+			if key == "description" and value:
+				self.description = value
+			if key == "thumbnail_img_link" and value:
+				self.thumbnail_img_link = value
+			if key == "tags" and value:
+				self.tags = json.loads(value)
+			if key == "is_featured" and value:
+				self.is_featured = value
+			if key == "context" and value:
+				self.context = context
+		self.save()
+
+	def bulk_serializer(self, queryset, is_logged_in):
+
+		article_data = []
+		for obj in queryset:
+			article_dict = dict()
+			article_dict["article_id"] = obj.article_id
+			article_dict["title"] = obj.title
+			article_dict["description"] = obj.description
+			article_dict["context"] = obj.context
+			article_dict["thumbnail_img_link"] = obj.thumbnail_img_link
+			article_dict["tags"] = obj.tags
+			article_dict["views_count"] = obj.views_count
+			article_dict["is_featured"] = obj.is_featured
+			article_dict["posted_on"] = obj.created_on.strftime("%d.%m.%Y")
+			article_data.append(article_dict)
+		return article_data
+
+class Article(BaseModel):
+
+	NEWS = "news"
+	ARTICLE = "article"
+	doc_type_choices = ((NEWS, "News"),
+						(ARTICLE, "Article"))
+
+	article_id = models.CharField(max_length=255, primary_key=True)
+	doc_type = models.CharField(max_length=255, default=NEWS, choices=doc_type_choices)
+	title = models.CharField(max_length=255, blank=True, null=True)
+	description = models.TextField(null=True, blank=True)
+	context = models.TextField(null=True, blank=True)
+	thumbnail_img_link = models.TextField(null=True, blank=True)
+	posted_by = models.ForeignKey(IppaUser, null=True, blank=True)
+	tags = ArrayField(models.CharField(blank=True, max_length=255), blank=True, null=True, default=list())
+	views_count = models.IntegerField(default=0)
+	is_featured = models.BooleanField(default=False)
+	upvote_count = models.IntegerField(default=0)
+	upvotes = GenericRelation(Activity, related_query_name='article')
+	objects = ArticleManager()
+
+	def __unicode__(self):
+		return str(self.article_id)
+
+	def serialize(self):
+		article_data = dict()
+		article_data["article_id"] = self.article_id
+		article_data["title"] = self.title
+		article_data["description"] = self.description
+		article_data["context"] = self.context
+		article_data["thumbnail_img_link"] = self.thumbnail_img_link
+		article_data["tags"] = self.tags
+		article_data["views_count"] = self.views_count
+		article_data["is_featured"] = self.is_featured
+		article_data["upvote_count"] = self.upvote_count
+		article_data["posted_on"] = self.created_on.strftime("%d.%m.%Y")
+		article_data["posted_by"] = {"name":self.posted_by.name, "profile_pic_link":self.posted_by.profile_image}
+
+		#content of article
+		group_objs = self.groups.filter(is_deleted=False)
+		article_data["content"] = list()
+		for group in group_objs:
+			article_data["content"].append(group.serialize())
+		return article_data
+
+class ArticleGroupManager(models.Manager):
+
+	def add_group(self, params, user):
+
+		curr_order = ArticleGroup.objects.filter(
+						article_id=params.get("article_id"), 
+						is_deleted=False).count()
+
+		group_obj = ArticleGroup.objects.create(
+						group_id=generate_unique_id("GROUP"),
+						title=params.get("title"),
+						context=params.get("context"),
+						article_id=params.get("article_id"),
+						content=params.get("content"),
+						order=curr_order+1
+						)
+		return group_obj
+
+class ArticleGroup(BaseModel):
+
+	group_id = models.CharField(max_length=255, primary_key=True)
+	title = models.TextField(null=True, blank=True)
+	context = models.TextField(null=True, blank=True)
+	order = models.IntegerField(default=0)
+	article = models.ForeignKey(Article, null=True, blank=True, related_name='groups')
+	content = JSONField(default=list(), null=True, blank=True)
+	objects = ArticleGroupManager()
+
+	def __unicode__(self):
+		return str(self.group_id)
+
+	def serialize(self):
+
+		group_data = dict()
+		group_data["group_id"] = self.group_id
+		group_data["title"] = self.title
+		group_data["context"] = self.context
+		group_data["order"] = self.order
+		group_data["element"] = self.content if self.content else []
+		return group_data
+
+	def update_group(self, data):
+		for key, value in data.iteritems():
+			if key == "title" and value:
+				self.title = value
+			if key == "context" and value:
+				self.context = value
+			if key == "order" and value:
+				self.order = value
+			if key == "content" and value:
+				self.content = json.loads(value)
+		self.save()
 

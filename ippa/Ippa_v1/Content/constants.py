@@ -44,6 +44,8 @@ REWARD_SEGMENT = "reward_content"
 TOURNAMENT_SEGMENT = "tournament_content"
 PROMOTIONS_SEGMENT = "promotion_segment"
 VIDEOS_SEGMENT = "videos_content"
+ARTICLE_SEGMENT = "article_content"
+NEWS_SEGMENT = "news_content"
 
 #REWARD NOTIFICATION KEY
 REWARD_ADMIN_MAIL = "offer_redeemed_notification"
@@ -304,6 +306,38 @@ NAVIGATION_BAR = [
 					"limit":50,
 					"offset":0,
 					"data_type":"all"
+				},
+				"sort_key":[],
+				"tertiary_segment":None
+			},
+			{
+				"name":"Articles",
+				"content_type":ARTICLE_SEGMENT,
+				"order":"5",
+				"is_default":False,
+				"filter_query":{
+					"limit":50,
+					"offset":0,
+					"data_type":"all",
+					"query":{
+						"doc_type":"article"
+					}
+				},
+				"sort_key":[],
+				"tertiary_segment":None
+			},
+			{
+				"name":"News",
+				"content_type":NEWS_SEGMENT,
+				"order":"5",
+				"is_default":False,
+				"filter_query":{
+					"limit":50,
+					"offset":0,
+					"data_type":"all",
+					"query":{
+						"doc_type":"news"
+					}
 				},
 				"sort_key":[],
 				"tertiary_segment":None

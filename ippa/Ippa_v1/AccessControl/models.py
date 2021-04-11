@@ -78,7 +78,7 @@ class IppaUserManager(models.Manager):
 			ippa_user = IppaUser.objects.create(**user_data_set)
 		return ippa_user
 
-	def bulk_serializer(self, queryset, is_logged_in=False):
+	def bulk_serializer(self, queryset, is_logged_in):
 
 		user_data = []
 		for obj in queryset:
@@ -181,6 +181,8 @@ class IppaUser(BaseModel):
 				self.city = value
 			if key == "favourite_hands" and value:
 				self.favourite_hands.append(value)
+			if key == "profile_image" and value:
+				self.profile_image = profile_image
 			# if key == "user_name" and value:
 			# 	username = IppaUser.objects.filter(user_name=value)
 			# 	if username.exists():
