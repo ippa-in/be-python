@@ -534,7 +534,7 @@ class ArticleManager(models.Manager):
 						context=params.get("context"),
 						posted_by=user,
 						thumbnail_img_link= params.get("thumbnail_img_link"),
-						tags=params.get("tags", list()).split(","),
+						tags=json.loads(params.get("tags", list())),
 						doc_type=params.get("doc_type")
 						)
 		return article_obj
@@ -630,7 +630,7 @@ class ArticleGroupManager(models.Manager):
 						title=params.get("title"),
 						context=params.get("context"),
 						article_id=params.get("article_id"),
-						content=params.get("content"),
+						content=json.loads(params.get("content")),
 						order=curr_order+1
 						)
 		return group_obj
